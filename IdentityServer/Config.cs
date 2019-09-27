@@ -3,6 +3,7 @@
 
 
 using IdentityServer4.Models;
+using IdentityServer4.Test;
 using System.Collections.Generic;
 
 namespace IdentityServer
@@ -21,7 +22,8 @@ namespace IdentityServer
         {
             return new List<ApiResource>
             {
-                new ApiResource("ratingapi", "Rating API")
+                new ApiResource("ratingapi", "Rating API"),
+                new ApiResource("testapi", "API Resource set for testing")
             };
         }
 
@@ -43,7 +45,32 @@ namespace IdentityServer
                     },
 
                     // scopes that client has access to
-                    AllowedScopes = { "api1" }
+                    AllowedScopes = { "testapi" }
+                },
+
+                new Client
+                {
+                    ClientId = "ro.client",
+                    AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
+
+                    ClientSecrets =
+                    {
+                        new Secret("secret".Sha256())
+                    },
+                    AllowedScopes = { "testapi" }
+                }
+            };
+        }
+
+        public static List<TestUser> GetUsers()
+        {
+            return new List<TestUser>
+            {
+                new TestUser
+                {
+                    SubjectId = "1",
+                    Username = "admin",
+                    Password = "admin"
                 }
             };
         }
