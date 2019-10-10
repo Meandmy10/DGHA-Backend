@@ -25,8 +25,8 @@ namespace TestClient
                 ClientId = "ro.client",
                 ClientSecret = "secret",
 
-                UserName = "admin",
-                Password = "admin",
+                UserName = "alice",
+                Password = "Pass123$",
                 Scope = "testapi"
             });
 
