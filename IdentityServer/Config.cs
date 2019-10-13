@@ -1,8 +1,4 @@
-﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
-
-
-using IdentityServer4.Models;
+﻿using IdentityServer4.Models;
 using IdentityServer4.Test;
 using System.Collections.Generic;
 
@@ -14,38 +10,35 @@ namespace IdentityServer
         {
             return new IdentityResource[]
             {
-                new IdentityResources.OpenId()
+                new IdentityResources.OpenId(),
+                new IdentityResources.Profile(),
             };
         }
 
         public static IEnumerable<ApiResource> GetApis()
         {
-            return new List<ApiResource>
+            return new ApiResource[]
             {
-                new ApiResource("ratingapi", "Rating API"),
+                new ApiResource("userapi", "User API"),
+                new ApiResource("locationapi", "Locaiton API"),
                 new ApiResource("testapi", "API Resource set for testing")
             };
         }
 
         public static IEnumerable<Client> GetClients()
         {
-            return new List<Client>
+            return new[]
             {
+                // client credentials flow client
                 new Client
                 {
                     ClientId = "client",
+                    ClientName = "Client Credentials Client",
 
-                    // no interactive user, use the clientid/secret for authentication
                     AllowedGrantTypes = GrantTypes.ClientCredentials,
+                    ClientSecrets = { new Secret("secret".Sha256()) },
 
-                    // secret for authentication
-                    ClientSecrets =
-                    {
-                        new Secret("secret".Sha256())
-                    },
-
-                    // scopes that client has access to
-                    AllowedScopes = { "testapi" }
+                    AllowedScopes = { "testapi", "locationapi" }
                 },
 
                 new Client
@@ -57,22 +50,22 @@ namespace IdentityServer
                     {
                         new Secret("secret".Sha256())
                     },
-                    AllowedScopes = { "testapi" }
+                    AllowedScopes = { "testapi", "userapi" }
                 }
             };
         }
 
-        public static List<TestUser> GetUsers()
+        public static List<TestUser> GetTestUsers()
         {
             return new List<TestUser>
-            {
-                new TestUser
                 {
-                    SubjectId = "1",
-                    Username = "admin",
-                    Password = "admin"
-                }
-            };
+                    new TestUser
+                    {
+                        SubjectId = "1",
+                        Username = "admin",
+                        Password = "admin"
+                    }
+                };
         }
     }
 }
