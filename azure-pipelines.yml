@@ -10,24 +10,26 @@ pool:
   vmImage: 'windows-latest'
 
 variables:
-  solution: '**/*.sln'
-  buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
+  projectPath: 'IdentityServer/IdentityServer.csproj'
 
 steps:
 - task: DotNetCoreCLI@2
+  displayName: 'Restore dependencies'
   inputs:
     command: 'restore'
-    projects: 'IdentityServer/IdentityServer.csproj'
+    projects: '$(projectPath)'
     feedsToUse: 'select'
 
 - task: DotNetCoreCLI@2
+  displayName: 'Build project'
   inputs:
     command: 'build'
-    projects: 'IdentityServer/IdentityServer.csproj'
-    arguments: '--configuration Release'
+    projects: '$(projectPath)'
+    arguments: '--configuration $(BuildConfiguration)'
 
 - task: DotNetCoreCLI@2
+  displayName: 'Publish project'
   inputs:
     command: 'publish'
     publishWebProjects: true
