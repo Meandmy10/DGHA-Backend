@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using IdentityServer.Data;
-using IdentityServer.Models;
+using ModelsLibrary;
+using ModelsLibrary.Data;
 
 namespace UserAPI.Controllers
 {
