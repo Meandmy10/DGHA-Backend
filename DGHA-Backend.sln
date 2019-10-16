@@ -9,9 +9,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentityServer", "IdentityS
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestAPI", "TestAPI\TestAPI.csproj", "{D35EF245-251F-40DD-8F17-C2B20D70EC52}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LocationAPI", "LocationAPI\LocationAPI.csproj", "{71F6C301-713F-4186-B551-6CB686A2EC6A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LocationAPI", "LocationAPI\LocationAPI.csproj", "{71F6C301-713F-4186-B551-6CB686A2EC6A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserAPI", "UserAPI\UserAPI.csproj", "{921BF052-D356-4DB8-AEED-28C25CE9F457}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UserAPI", "UserAPI\UserAPI.csproj", "{921BF052-D356-4DB8-AEED-28C25CE9F457}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModelsLibrary", "ModelsLibrary\ModelsLibrary.csproj", "{91A46987-D0F5-43F7-86A5-4EB1B964271A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +41,10 @@ Global
 		{921BF052-D356-4DB8-AEED-28C25CE9F457}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{921BF052-D356-4DB8-AEED-28C25CE9F457}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{921BF052-D356-4DB8-AEED-28C25CE9F457}.Release|Any CPU.Build.0 = Release|Any CPU
+		{91A46987-D0F5-43F7-86A5-4EB1B964271A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{91A46987-D0F5-43F7-86A5-4EB1B964271A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{91A46987-D0F5-43F7-86A5-4EB1B964271A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{91A46987-D0F5-43F7-86A5-4EB1B964271A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

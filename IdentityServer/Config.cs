@@ -55,17 +55,17 @@ namespace IdentityServer
             };
         }
 
-        public static List<TestUser> GetTestUsers()
-        {
-            return new List<TestUser>
-                {
-                    new TestUser
-                    {
-                        SubjectId = "1",
-                        Username = "admin",
-                        Password = "admin"
-                    }
-                };
-        }
+        //public static List<TestUser> GetTestUsers()
+        //{
+        //    return new List<TestUser>
+        //        {
+        //            new TestUser
+        //            {
+        //                SubjectId = "1",
+        //                Username = "admin",
+        //                Password = "admin"
+        //            }
+        //        };
+        //}
     }
 }
