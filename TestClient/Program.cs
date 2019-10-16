@@ -94,14 +94,14 @@ namespace TestClient
                 ClientId = "ro.client",
                 ClientSecret = "secret",
 
-                UserName = "admin",
-                Password = "admin",
+                UserName = "102088707@student.swin.edu.au",
+                Password = "Password!23",
                 Scope = "testapi"
             });
 
             if (tokenResponse.IsError)
             {
-                Console.WriteLine(tokenResponse.Error);
+                Console.WriteLine(tokenResponse.ToString());
                 return;
             }
 
@@ -130,8 +130,8 @@ namespace TestClient
                 ClientId = "ro.client",
                 ClientSecret = "secret",
 
-                UserName = "admin",
-                Password = "admin",
+                UserName = "102088707@student.swin.edu.au",
+                Password = "Password!23",
                 Scope = "userapi"
             });
 
