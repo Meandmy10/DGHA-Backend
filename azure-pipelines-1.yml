@@ -10,7 +10,7 @@ pool:
   vmImage: 'windows-latest'
 
 variables:
-  buildConfiguration: 'Release'
+  buildConfiguration: 'Debug'
   projectPath: 'LocationAPI/LocationAPI.csproj'
 
 steps:
