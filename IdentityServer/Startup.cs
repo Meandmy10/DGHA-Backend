@@ -36,17 +36,6 @@ namespace IdentityServer
 
             services.AddDbContext<ApplicationDbContext>();
 
-            //if (Environment.IsDevelopment())
-            //{
-            //    services.AddDbContext<ApplicationDbContext>(options =>
-            //        options.UseSqlServer(Configuration.GetConnectionString("DevelopmentConnection")));
-            //}
-            //else
-            //{
-            //    services.AddDbContext<ApplicationDbContext>(options =>
-            //        options.UseSqlServer(Configuration.GetConnectionString("ProductionConnection"))); //currently the same as development connection.
-            //}
-
             //services.Configure<IdentityOptions>(options =>
             //{
             //    // Password settings.
@@ -87,7 +76,6 @@ namespace IdentityServer
             if (Environment.IsDevelopment())
             {
                 builder.AddDeveloperSigningCredential();
-                       //.AddTestUsers(Config.GetTestUsers());
             }
             else
             {
@@ -134,8 +122,6 @@ namespace IdentityServer
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapDefaultControllerRoute();
-                //endpoints.MapControllers();
-                //endpoints.MapRazorPages();
             });
         }
     }
