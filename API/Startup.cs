@@ -50,7 +50,7 @@ namespace API
                     }
                     else
                     {
-                        options.Authority = ""; //Update to Identity Server when deployed
+                        options.Authority = "https://dgha-api.azurewebsites.net"; //Update to Identity Server when deployed
                     }
 
                     options.Audience = "locationapi";
