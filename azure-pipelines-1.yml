@@ -4,14 +4,14 @@ trigger:
     - master
   paths:
     include:
-    - LocationAPI/*
+    - API/*
 
 pool:
   vmImage: 'windows-latest'
 
 variables:
-  buildConfiguration: 'Debug'
-  projectPath: 'LocationAPI/LocationAPI.csproj'
+  buildConfiguration: 'Release'
+  projectPath: 'API/API.csproj'
 
 steps:
 - task: DotNetCoreCLI@2
