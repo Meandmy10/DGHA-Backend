@@ -6,16 +6,17 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Logging;
 using Microsoft.OpenApi.Models;
 using ModelsLibrary.Data;
 
-namespace UserAPI
+namespace API
 {
     public class Startup
     {
@@ -36,7 +37,7 @@ namespace UserAPI
             // Register the Swagger generator, defining 1 or more Swagger documents
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "User API", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Location API", Version = "v1" });
             });
 
             services.AddAuthentication("Bearer")
@@ -52,18 +53,21 @@ namespace UserAPI
                         options.Authority = ""; //Update to Identity Server when deployed
                     }
 
-                    options.Audience = "userapi";
+                    options.Audience = "locationapi";
                 });
 
             services.AddDbContext<ApplicationDbContext>();
+
+            services.AddSingleton<IEmailSender, EmailSender>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app)
         {
-            if (env.IsDevelopment())
+            if (Environment.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                IdentityModelEventSource.ShowPII = true;
             }
 
             // Enable middleware to serve generated Swagger as a JSON endpoint.
@@ -73,7 +77,7 @@ namespace UserAPI
             // specifying the Swagger JSON endpoint.
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "User API V1");
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Location API V1");
                 c.RoutePrefix = string.Empty;
             });
 
