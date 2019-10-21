@@ -11,7 +11,9 @@
 *.sln.docstates
 
 # ignores temp key (dev client generates one when it's absent)
-tempkey.rsa
+# Removed because getting certificates is hard, you should probably add this back in production
+# tempkey.rsa
+
 # ignores log file to avoid unessecary conflicts
 identityserver4_log.txt
 
