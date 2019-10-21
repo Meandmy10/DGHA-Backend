@@ -39,5 +39,5 @@ steps:
   displayName: 'Publish build artifact'
   inputs:
     PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-    ArtifactName: 'LocationAPI'
+    ArtifactName: 'API'
     publishLocation: 'Container'
