@@ -10,7 +10,7 @@ pool:
   vmImage: 'windows-latest'
 
 variables:
-  buildConfiguration: 'Debug'
+  buildConfiguration: 'Release'
   projectPath: 'IdentityServer/IdentityServer.csproj'
 
 steps:
