@@ -51,16 +51,19 @@ namespace TestClient
                 var content = await response.Content.ReadAsStringAsync();
                 Console.WriteLine(JArray.Parse(content));
             }
-
-            // Location API
+            
+            // User Authentication
+            // DGHA API
             // request token
-            tokenResponse = await client.RequestClientCredentialsTokenAsync(new ClientCredentialsTokenRequest
+            tokenResponse = await client.RequestPasswordTokenAsync(new PasswordTokenRequest
             {
                 Address = disco.TokenEndpoint,
-
-                ClientId = "client",
+                ClientId = "ro.client",
                 ClientSecret = "secret",
-                Scope = "locationapi"
+
+                UserName = "102088707@student.swin.edu.au",
+                Password = "Password!23",
+                Scope = "api"
             });
 
             if (tokenResponse.IsError)
@@ -76,78 +79,6 @@ namespace TestClient
             client.SetBearerToken(tokenResponse.AccessToken);
 
             response = await client.GetAsync("https://localhost:44383/weatherforecast");
-            if (!response.IsSuccessStatusCode)
-            {
-                Console.WriteLine(response.StatusCode);
-            }
-            else
-            {
-                var content = await response.Content.ReadAsStringAsync();
-                Console.WriteLine(JArray.Parse(content));
-            }
-
-            // User Authentication
-            // request token
-            tokenResponse = await client.RequestPasswordTokenAsync(new PasswordTokenRequest
-            {
-                Address = disco.TokenEndpoint,
-                ClientId = "ro.client",
-                ClientSecret = "secret",
-
-                UserName = "102088707@student.swin.edu.au",
-                Password = "Password!23",
-                Scope = "testapi"
-            });
-
-            if (tokenResponse.IsError)
-            {
-                Console.WriteLine(tokenResponse.ToString());
-                return;
-            }
-
-            Console.WriteLine(tokenResponse.Json);
-
-            // call api
-            client = new HttpClient();
-            client.SetBearerToken(tokenResponse.AccessToken);
-
-            response = await client.GetAsync("https://localhost:44301/identity");
-            if (!response.IsSuccessStatusCode)
-            {
-                Console.WriteLine(response.StatusCode);
-            }
-            else
-            {
-                var content = await response.Content.ReadAsStringAsync();
-                Console.WriteLine(JArray.Parse(content));
-            }
-
-            // User API
-            // request token
-            tokenResponse = await client.RequestPasswordTokenAsync(new PasswordTokenRequest
-            {
-                Address = disco.TokenEndpoint,
-                ClientId = "ro.client",
-                ClientSecret = "secret",
-
-                UserName = "102088707@student.swin.edu.au",
-                Password = "Password!23",
-                Scope = "userapi"
-            });
-
-            if (tokenResponse.IsError)
-            {
-                Console.WriteLine(tokenResponse.Error);
-                return;
-            }
-
-            Console.WriteLine(tokenResponse.Json);
-
-            // call api (Default)
-            client = new HttpClient();
-            client.SetBearerToken(tokenResponse.AccessToken);
-
-            response = await client.GetAsync("https://localhost:44346/weatherforecast");
             if (!response.IsSuccessStatusCode)
             {
                 Console.WriteLine(response.StatusCode);

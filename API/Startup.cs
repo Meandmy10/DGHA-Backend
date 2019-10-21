@@ -37,7 +37,7 @@ namespace API
             // Register the Swagger generator, defining 1 or more Swagger documents
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Location API", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "DGHA API", Version = "v1" });
             });
 
             services.AddAuthentication("Bearer")
@@ -53,7 +53,7 @@ namespace API
                         options.Authority = "https://dgha-api.azurewebsites.net"; //Update to Identity Server when deployed
                     }
 
-                    options.Audience = "locationapi";
+                    options.Audience = "api";
                 });
 
             services.AddDbContext<ApplicationDbContext>();
@@ -77,7 +77,7 @@ namespace API
             // specifying the Swagger JSON endpoint.
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Location API V1");
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "DGHA API V1");
                 c.RoutePrefix = string.Empty;
             });
 
