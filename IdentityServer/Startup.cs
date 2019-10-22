@@ -100,7 +100,7 @@ namespace IdentityServer
                     throw new FileNotFoundException("Signing Certificate is missing!");
                 }
 
-                var cert = new X509Certificate2(fileName);
+                var cert = new X509Certificate2(fileName, "18372117493b5b7ec006c31d966143fc95a9464a2b5f8d5188e23c5557b2292d");
 
                 builder.AddSigningCredential(cert);
             }
