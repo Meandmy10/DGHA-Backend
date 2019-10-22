@@ -8,6 +8,8 @@ using Microsoft.Extensions.Hosting;
 using ModelsLibrary;
 using ModelsLibrary.Data;
 using System;
+using System.IO;
+using System.Security.Cryptography.X509Certificates;
 
 namespace IdentityServer
 {
@@ -84,19 +86,24 @@ namespace IdentityServer
                 .AddInMemoryClients(Config.GetClients())
                 .AddAspNetIdentity<User>();
 
-            //THIS SHOULD NOT BE DONE IN PRODUCTION, it's not secure
-            //I'm only doing this so we don't need to buy a credential
-            builder.AddDeveloperSigningCredential();
+            if (Environment.IsDevelopment())
+            {
+                builder.AddDeveloperSigningCredential();
+                //.AddTestUsers(Config.GetTestUsers());
+            }
+            else
+            {
+                var fileName = @"D:\cacert\cacert.pem";
 
-            //if (Environment.IsDevelopment())
-            //{
-            //    builder.AddDeveloperSigningCredential();
-            //    //.AddTestUsers(Config.GetTestUsers());
-            //}
-            //else
-            //{
-            //    throw new Exception("need to configure key material");
-            //}
+                if (!File.Exists(fileName))
+                {
+                    throw new FileNotFoundException("Signing Certificate is missing!");
+                }
+
+                var cert = new X509Certificate2(fileName);
+
+                builder.AddSigningCredential(cert);
+            }
 
             //Uncomment when federated login is setup
             //services.AddAuthentication()
