@@ -14,7 +14,7 @@ using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using ModelsLibrary;
 
-namespace IdentityServer.Controllers
+namespace API.Controllers
 {
     [Route("[controller]")]
     [ApiController]
