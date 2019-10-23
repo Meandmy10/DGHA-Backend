@@ -13,14 +13,15 @@ namespace API.Controllers
     public class LocationController : ControllerBase
     {
         [HttpGet]
-        public async Task<IEnumerable<Location>> GetLocations(string searchTerm, string location)
+        public async Task<IEnumerable<Location>> GetLocations(string searchTerm, string location = "Australia")
         {
             throw new NotImplementedException();
         }
 
-        [HttpGet("{id}")]
-        public async Task<Location> GetLocation(string id)
+        [HttpGet("{placeId}")]
+        public async Task<Location> GetLocation(string placeId)
         {
+
             throw new NotImplementedException();
         }
     }
