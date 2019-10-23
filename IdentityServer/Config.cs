@@ -19,8 +19,7 @@ namespace IdentityServer
         {
             return new ApiResource[]
             {
-                new ApiResource("userapi", "User API"),
-                new ApiResource("locationapi", "Locaiton API"),
+                new ApiResource("api", "DGHA API"),
                 new ApiResource("testapi", "API Resource set for testing")
             };
         }
@@ -38,7 +37,7 @@ namespace IdentityServer
                     AllowedGrantTypes = GrantTypes.ClientCredentials,
                     ClientSecrets = { new Secret("secret".Sha256()) },
 
-                    AllowedScopes = { "testapi", "locationapi" }
+                    AllowedScopes = { "testapi" }
                 },
 
                 new Client
@@ -50,7 +49,7 @@ namespace IdentityServer
                     {
                         new Secret("secret".Sha256())
                     },
-                    AllowedScopes = { "testapi", "userapi" }
+                    AllowedScopes = { "api" }
                 }
             };
         }

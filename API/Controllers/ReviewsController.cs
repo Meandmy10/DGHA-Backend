@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using ModelsLibrary;
 using ModelsLibrary.Data;
 
-namespace UserAPI.Controllers
+namespace API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
