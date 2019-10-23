@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ModelsLibrary.Data;
 
-namespace IdentityServer.Migrations
+namespace ModelsLibrary.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
     [Migration("20191013104613_InitialCreate")]
@@ -21,7 +21,7 @@ namespace IdentityServer.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-            modelBuilder.Entity("IdentityServer.Models.Location", b =>
+            modelBuilder.Entity("ModelsLibrary.Location", b =>
                 {
                     b.Property<string>("PlaceID")
                         .HasColumnType("nvarchar(450)");
@@ -31,7 +31,7 @@ namespace IdentityServer.Migrations
                     b.ToTable("Locations");
                 });
 
-            modelBuilder.Entity("IdentityServer.Models.Review", b =>
+            modelBuilder.Entity("ModelsLibrary.Review", b =>
                 {
                     b.Property<string>("PlaceID")
                         .HasColumnType("nvarchar(450)");
@@ -64,7 +64,7 @@ namespace IdentityServer.Migrations
                     b.ToTable("Reviews");
                 });
 
-            modelBuilder.Entity("IdentityServer.Models.User", b =>
+            modelBuilder.Entity("ModelsLibrary.User", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
@@ -260,15 +260,15 @@ namespace IdentityServer.Migrations
                     b.ToTable("AspNetUserTokens");
                 });
 
-            modelBuilder.Entity("IdentityServer.Models.Review", b =>
+            modelBuilder.Entity("ModelsLibrary.Review", b =>
                 {
-                    b.HasOne("IdentityServer.Models.Location", null)
+                    b.HasOne("ModelsLibrary.Location", null)
                         .WithMany("Reviews")
                         .HasForeignKey("PlaceID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("IdentityServer.Models.User", null)
+                    b.HasOne("ModelsLibrary.User", null)
                         .WithMany("Reviews")
                         .HasForeignKey("UserID")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -286,7 +286,7 @@ namespace IdentityServer.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("IdentityServer.Models.User", null)
+                    b.HasOne("ModelsLibrary.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -295,7 +295,7 @@ namespace IdentityServer.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("IdentityServer.Models.User", null)
+                    b.HasOne("ModelsLibrary.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -310,7 +310,7 @@ namespace IdentityServer.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("IdentityServer.Models.User", null)
+                    b.HasOne("ModelsLibrary.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -319,7 +319,7 @@ namespace IdentityServer.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.HasOne("IdentityServer.Models.User", null)
+                    b.HasOne("ModelsLibrary.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
