@@ -7,9 +7,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 namespace API
 {
-    public class Program
+    public static class Program
     {
         public static void Main(string[] args)
         {
