@@ -19,7 +19,7 @@ namespace IdentityServer
         {
             return new ApiResource[]
             {
-                new ApiResource("api", "DGHA API"),
+                new ApiResource("api", "DGHA API", new List<string> {"role"}),
                 new ApiResource("testapi", "API Resource set for testing")
             };
         }

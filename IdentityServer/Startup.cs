@@ -22,8 +22,30 @@ namespace IdentityServer
             Configuration = configuration;
         }
 
+        readonly string MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+
         public void ConfigureServices(IServiceCollection services)
         {
+            string apiUrl;
+
+            if (Environment.IsDevelopment())
+            {
+                apiUrl = "https://localhost:44383";
+            }
+            else
+            {
+                apiUrl = "http://dgha-api.azurewebsites.net";
+            }
+
+            services.AddCors(options =>
+            {
+                options.AddPolicy(MyAllowSpecificOrigins,
+                builder =>
+                {
+                    builder.WithOrigins(apiUrl).AllowCredentials().AllowAnyHeader();
+                });
+            });
+
             services.AddControllersWithViews();
 
             services.AddMvc();
@@ -70,7 +92,8 @@ namespace IdentityServer
 
             services.AddIdentity<User, IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
-                .AddDefaultTokenProviders();
+                .AddDefaultTokenProviders()
+                .AddRoles<IdentityRole>();
             
             var builder = services.AddIdentityServer(options =>
                 {
@@ -130,6 +153,8 @@ namespace IdentityServer
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
+
+            app.UseCors(MyAllowSpecificOrigins);
 
             app.UseIdentityServer();
             app.UseAuthorization();

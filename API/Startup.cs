@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -18,6 +19,8 @@ using Microsoft.IdentityModel.Logging;
 using Microsoft.OpenApi.Models;
 using ModelsLibrary;
 using ModelsLibrary.Data;
+using Swashbuckle.AspNetCore.Filters;
+using Swashbuckle.AspNetCore.Swagger;
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 
@@ -46,8 +49,52 @@ namespace API
                 { 
                     Title = "DGHA API", 
                     Version = "v1",
-                   Description = "An API for the DGHA project"
+                    Description = "An API for the DGHA project"
                 });
+
+                string baseUrl;
+
+                if (Environment.IsDevelopment())
+                {
+                    baseUrl = "http://localhost:5000/";
+                }
+                else
+                {
+                    baseUrl = "https://dgha-identityserver.azurewebsites.net/";
+                }
+
+                c.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
+                {
+                    Type = SecuritySchemeType.OAuth2,
+                    Flows = new OpenApiOAuthFlows
+                    {
+                        Password = new OpenApiOAuthFlow
+                        {
+                            TokenUrl = new Uri(baseUrl + "connect/token"),
+                            Scopes = new Dictionary<string, string>
+                            {
+                                { "api", "DGHA API" },
+                            }
+                        }
+                    }
+                });
+
+                c.OperationFilter<SecurityRequirementsOperationFilter>();
+                //c.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
+                //{
+                //    Type = SecuritySchemeType.OAuth2,
+                //    Flows = new OpenApiOAuthFlows
+                //    {
+                //        Implicit = new OpenApiOAuthFlow
+                //        {
+                //            AuthorizationUrl = new Uri("/auth-server/connect/authorize", UriKind.Relative),
+                //            Scopes = new Dictionary<string, string>
+                //            {
+                //                { "api", "DGHA API" }
+                //            }
+                //        }
+                //    }
+                //});
 
                 // Set the comments path for the Swagger JSON and UI.
                 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
@@ -65,7 +112,7 @@ namespace API
                     }
                     else
                     {
-                        options.Authority = "https://dgha-api.azurewebsites.net";
+                        options.Authority = "https://dgha-identityserver.azurewebsites.net";
                     }
 
                     options.Audience = "api";

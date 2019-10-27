@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -15,6 +17,7 @@ namespace API.Controllers
     [Produces("application/json")]
     [Route("[controller]")]
     [ApiController]
+    [Authorize(AuthenticationSchemes = "Bearer")]
     public class ReviewsController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
@@ -32,6 +35,7 @@ namespace API.Controllers
         /// <returns>All Reviews</returns>
         /// <response code="200">Returns All Reviews</response>
         [HttpGet]
+        [Authorize(Roles = "Administrator")]
         [ProducesResponseType(200)]
         public async Task<ActionResult<IEnumerable<Review>>> GetReviews()
         {
@@ -49,6 +53,7 @@ namespace API.Controllers
         [HttpGet("{placeId}")]
         [ProducesResponseType(200)]
         [ProducesResponseType(404)]
+        [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<Review>>> GetPlaceReviews(string placeId)
         {
             var reviews = await _context.Reviews.Where(review => review.PlaceID == placeId)
@@ -74,6 +79,7 @@ namespace API.Controllers
         [HttpGet("{placeId}/{userId}")]
         [ProducesResponseType(200)]
         [ProducesResponseType(404)]
+        [AllowAnonymous]
         public async Task<ActionResult<Review>> GetReview(string placeId, string userId)
         {
             var review = await _context.Reviews.FirstAsync(review => review.PlaceID == placeId && review.UserID == userId)
@@ -104,6 +110,11 @@ namespace API.Controllers
             if (review == null)
             {
                 return BadRequest();
+            }
+
+            if (!HasOwnedDataAccess(review.UserID))
+            {
+                return Forbid();
             }
 
             review.DateTime = DateTime.Now;
@@ -164,6 +175,11 @@ namespace API.Controllers
                 return BadRequest();
             }
 
+            if (!HasOwnedDataAccess(review.UserID))
+            {
+                return Forbid();
+            }
+
             _context.Entry(review).State = EntityState.Modified;
 
             try
@@ -206,6 +222,11 @@ namespace API.Controllers
                 return NotFound();
             }
 
+            if (!HasOwnedDataAccess(review.UserID))
+            {
+                return Forbid();
+            }
+
             _context.Reviews.Remove(review);
 
             //If there are no reviews for location, delete location from db
@@ -226,6 +247,26 @@ namespace API.Controllers
         {
             return await _context.Reviews.AnyAsync(e => e.PlaceID == placeId && e.UserID == userId)
                                          .ConfigureAwait(false);
+        }
+
+        private bool HasOwnedDataAccess(string userId)
+        {
+            var claimsIdentity = (ClaimsIdentity)User.Identity;
+            var claim = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
+            if (claim.Value == userId)
+            {
+                return true;
+            }
+            else
+            {
+                var roleClaims = claimsIdentity.FindAll(ClaimTypes.Role);
+                if (roleClaims.Any(claim => claim.Value == "Administrator"))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }
