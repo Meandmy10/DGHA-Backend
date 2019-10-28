@@ -50,9 +50,10 @@ namespace API.Controllers
         [HttpGet]
         [ProducesResponseType(200)]
         [Authorize(Roles = "Administrator")]
-        public async Task<IEnumerable<User>> GetAccounts()
+        public async Task<IEnumerable<BasicUser>> GetAccounts()
         {
-            return await _userManager.Users.ToListAsync()
+            return await _userManager.Users.Select(user => new BasicUser(user))
+                                           .ToListAsync()
                                            .ConfigureAwait(false);
         }
 
@@ -66,15 +67,15 @@ namespace API.Controllers
         [HttpGet("{userId}")]
         [ProducesResponseType(200)]
         [ProducesResponseType(404)]
-        public async Task<ActionResult<User>> GetAccount(string userId)
+        public async Task<ActionResult<BasicUser>> GetAccount(string userId)
         {
             if (!HasOwnedDataAccess(userId))
             {
                 return Forbid();
             }
 
-            User user = await _userManager.FindByIdAsync(userId)
-                                          .ConfigureAwait(false);
+            BasicUser user = await _userManager.FindByIdAsync(userId)
+                                               .ConfigureAwait(false);
             if (user == null)
             {
                 return NotFound();
@@ -96,7 +97,7 @@ namespace API.Controllers
         [ProducesResponseType(201)]
         [ProducesResponseType(400)]
         [AllowAnonymous]
-        public async Task<ActionResult<User>> PostAccount(NewUser newUser)
+        public async Task<ActionResult<BasicUser>> PostAccount(NewUser newUser)
         {
             if (newUser == null)
             {
@@ -136,8 +137,8 @@ namespace API.Controllers
             //    return LocalRedirect(returnUrl);
             //}
 
-            var createdUser = await _userManager.FindByNameAsync(user.UserName)
-                                        .ConfigureAwait(false);
+            BasicUser createdUser = await _userManager.FindByNameAsync(user.UserName)
+                                                      .ConfigureAwait(false);
 
             return CreatedAtAction("GetAccount", new { userId = createdUser.Id }, createdUser);
         }
@@ -176,7 +177,7 @@ namespace API.Controllers
         [HttpDelete("{userId}")]
         [ProducesResponseType(200)]
         [ProducesResponseType(404)]
-        public async Task<ActionResult<User>> DeleteAccount(string userId)
+        public async Task<ActionResult<BasicUser>> DeleteAccount(string userId)
         {
             if (!HasOwnedDataAccess(userId))
             {
@@ -194,7 +195,9 @@ namespace API.Controllers
             await _userManager.DeleteAsync(user)
                               .ConfigureAwait(false);
 
-            return user;
+            BasicUser basicUser = user;
+
+            return basicUser;
         }
 
         /// <summary>

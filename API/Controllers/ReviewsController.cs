@@ -4,6 +4,7 @@ using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using API.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -50,13 +51,48 @@ namespace API.Controllers
         /// <returns>All Reviews from specified place id</returns>
         /// <response code="200">Returns All Reviews from specified place</response>
         /// <response code="404">No Reviews Found</response>
-        [HttpGet("{placeId}")]
+        [HttpGet("placeId/{placeId}")]
         [ProducesResponseType(200)]
         [ProducesResponseType(404)]
         [AllowAnonymous]
-        public async Task<ActionResult<IEnumerable<Review>>> GetPlaceReviews(string placeId)
+        public async Task<ActionResult<PlaceReviews>> GetPlaceReviews(string placeId)
         {
             var reviews = await _context.Reviews.Where(review => review.PlaceID == placeId)
+                                                .ToListAsync()
+                                                .ConfigureAwait(false);
+
+            if (reviews == null)
+            {
+                return NotFound();
+            }
+
+            var placeReviews = new PlaceReviews
+            {
+                AverageRating = (byte)reviews.Average(review => (int)review.OverallRating),
+                AverageLocationRating = (byte)reviews.Average(review => (int)review.LocationRating),
+                AverageAmentitiesRating = (byte)reviews.Average(review => (int)review.AmentitiesRating),
+                AverageServiceRating = (byte)reviews.Average(review => (int)review.ServiceRating),
+                Count = reviews.Count,
+                Reviews = reviews
+            };
+
+            return placeReviews;
+        }
+
+        /// <summary>
+        /// Gets all reviews for specified user
+        /// </summary>
+        /// <param name="userId">User Id</param>
+        /// <returns>All Reviews from speficiedn user</returns>
+        /// <response code="200">Returns All Reviews from speficiedn user</response>
+        /// <response code="404">No Reviews Found</response>
+        [HttpGet("userId/{userId}")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(404)]
+        [AllowAnonymous]
+        public async Task<ActionResult<IEnumerable<Review>>> GetUserReviews(string userId)
+        {
+            var reviews = await _context.Reviews.Where(review => review.UserID == userId)
                                                 .ToListAsync()
                                                 .ConfigureAwait(false);
 
