@@ -42,7 +42,7 @@ namespace IdentityServer
                 options.AddPolicy(MyAllowSpecificOrigins,
                 builder =>
                 {
-                    builder.WithOrigins(apiUrl).AllowCredentials().AllowAnyHeader();
+                    builder.WithOrigins(apiUrl).AllowCredentials().AllowAnyHeader().AllowAnyMethod();
                 });
             });
 

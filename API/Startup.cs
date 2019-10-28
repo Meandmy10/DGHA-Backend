@@ -73,7 +73,7 @@ namespace API
                             TokenUrl = new Uri(baseUrl + "connect/token"),
                             Scopes = new Dictionary<string, string>
                             {
-                                { "api", "DGHA API" },
+                                { "api", "DGHA API -  Read, Write" },
                             }
                         }
                     }
