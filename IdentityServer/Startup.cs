@@ -34,7 +34,7 @@ namespace IdentityServer
             }
             else
             {
-                apiUrl = "http://dgha-api.azurewebsites.net";
+                apiUrl = "https://dgha-api.azurewebsites.net";
             }
 
             services.AddCors(options =>
@@ -108,7 +108,7 @@ namespace IdentityServer
                 .AddAspNetIdentity<User>();
 
             //THIS SHOULD NOT BE DONE IN PRODUCTION, it's not secure
-            //I'm only doing this so we don't need to buy a credential
+            //I'm only doing this so we don't need to buy/make a credential
             builder.AddDeveloperSigningCredential();
 
             //if (Environment.IsDevelopment())
