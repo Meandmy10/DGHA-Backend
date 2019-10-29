@@ -60,7 +60,7 @@ namespace API.Controllers
         /// <summary>
         /// Gets Requested User Account
         /// </summary>
-        /// <param name="userId">Account Id</param>
+        /// <param name="userId">User Account Id</param>
         /// <returns>Requested Account</returns>
         /// <response code="200">Returns Specified User Accounts</response>
         /// <response code="404">Account Not Found</response>
@@ -145,32 +145,38 @@ namespace API.Controllers
 
         /// <summary>
         /// Puts Updated User Account
-        /// NOTE: Not Impimented Yet
+        /// Note: Currently passwords are put in the address, which isn't ideal, prone to change
         /// </summary>
-        /// <param name="userId">User Id</param>
-        /// <param name="editedUser">Edited User</param>
-        /// <returns></returns>
-        [HttpPut("{userId}")]
-        public async Task<IActionResult> PutAccount(string userId, User editedUser)
+        /// <param name="userId">User's Id</param>
+        /// <param name="currentPassword">Password Currently used</param>
+        /// <param name="newPassword">Password to change to</param>
+        /// <returns>Action Result</returns>
+        [HttpPut("{userId}/UpdatePassword")]
+        public async Task<IActionResult> PutAccount(string userId, string currentPassword, string newPassword)
         {
             if (!HasOwnedDataAccess(userId))
             {
                 return Forbid();
             }
 
-            if (editedUser == null || editedUser.Id != userId)
+            var user = await _userManager.FindByIdAsync(userId)
+                                         .ConfigureAwait(false);
+
+            var result = await _userManager.ChangePasswordAsync(user, currentPassword, newPassword)
+                                           .ConfigureAwait(false);
+
+            if (!result.Succeeded)
             {
                 return BadRequest();
             }
 
-            throw new NotImplementedException();
+            return NoContent();
         }
 
         /// <summary>
         /// Deletes Specified User Account
-        /// NOTE: Currently does not handle user delete requests with users that have reviews on db
         /// </summary>
-        /// <param name="userId">User Id</param>
+        /// <param name="userId">User's Id</param>
         /// <returns>Deleted user</returns>
         /// <response code="200">Returns Deleted User Account</response>
         /// <response code="404">Returns Request Error</response>
@@ -203,7 +209,7 @@ namespace API.Controllers
         /// <summary>
         /// Posts new role to user account
         /// </summary>
-        /// <param name="userId">User Id</param>
+        /// <param name="userId">Users Id</param>
         /// <param name="roleName">Role Name</param>
         /// <returns>Action Result</returns>
         /// <response code="204">Role added successfully</response>
@@ -238,7 +244,7 @@ namespace API.Controllers
         /// <summary>
         /// Deletes role from user account
         /// </summary>
-        /// <param name="userId">User Id</param>
+        /// <param name="userId">Users Id</param>
         /// <param name="roleName">Role Name</param>
         /// <returns>Action Result</returns>
         /// <response code="204">Role removed successfully</response>

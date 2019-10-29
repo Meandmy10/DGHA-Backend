@@ -9,6 +9,7 @@ using ModelsLibrary;
 using ModelsLibrary.Data;
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+
 namespace API.Controllers
 {
     [Produces("application/json")]

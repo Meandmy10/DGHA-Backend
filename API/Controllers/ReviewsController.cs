@@ -13,6 +13,7 @@ using ModelsLibrary;
 using ModelsLibrary.Data;
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+
 namespace API.Controllers
 {
     [Produces("application/json")]
@@ -47,7 +48,7 @@ namespace API.Controllers
         /// <summary>
         /// Gets All Reviews for requested Place Id
         /// </summary>
-        /// <param name="placeId">Place Id</param>
+        /// <param name="placeId">Place Id to get reviews for</param>
         /// <returns>All Reviews from specified place id</returns>
         /// <response code="200">Returns All Reviews from specified place</response>
         /// <response code="404">No Reviews Found</response>
@@ -68,10 +69,10 @@ namespace API.Controllers
 
             var placeReviews = new PlaceReviews
             {
-                AverageRating = (byte)reviews.Average(review => (int)review.OverallRating),
-                AverageLocationRating = (byte)reviews.Average(review => (int)review.LocationRating),
-                AverageAmentitiesRating = (byte)reviews.Average(review => (int)review.AmentitiesRating),
-                AverageServiceRating = (byte)reviews.Average(review => (int)review.ServiceRating),
+                AverageRating = (byte)reviews.Average(review => review.OverallRating),
+                AverageLocationRating = (byte)reviews.Average(review => review.LocationRating),
+                AverageAmentitiesRating = (byte)reviews.Average(review => review.AmentitiesRating),
+                AverageServiceRating = (byte)reviews.Average(review => review.ServiceRating),
                 Count = reviews.Count,
                 Reviews = reviews
             };
@@ -82,7 +83,7 @@ namespace API.Controllers
         /// <summary>
         /// Gets all reviews for specified user
         /// </summary>
-        /// <param name="userId">User Id</param>
+        /// <param name="userId">User Id to get reviews for</param>
         /// <returns>All Reviews from speficiedn user</returns>
         /// <response code="200">Returns All Reviews from speficiedn user</response>
         /// <response code="404">No Reviews Found</response>
@@ -107,8 +108,8 @@ namespace API.Controllers
         /// <summary>
         /// Gets Specified Review
         /// </summary>
-        /// <param name="placeId">Place Id</param>
-        /// <param name="userId">User Id</param>
+        /// <param name="placeId">Place Id of review's place</param>
+        /// <param name="userId">User Id of review's user</param>
         /// <returns>Requested Review</returns>
         /// <response code="200">Returns Requested Review</response>
         /// <response code="404">No Review Found</response>
@@ -118,8 +119,7 @@ namespace API.Controllers
         [AllowAnonymous]
         public async Task<ActionResult<Review>> GetReview(string placeId, string userId)
         {
-            var review = await _context.Reviews.FirstAsync(review => review.PlaceID == placeId && review.UserID == userId)
-                                               .ConfigureAwait(false);
+            var review = await _context.Reviews.FindAsync(placeId, userId);
 
             if (review == null)
             {
@@ -132,37 +132,44 @@ namespace API.Controllers
         /// <summary>
         /// Posts New Review
         /// </summary>
-        /// <param name="review">Review</param>
+        /// <param name="newReview">Review to add</param>
         /// <returns>Added Review</returns>
         /// <response code="201">Returns Posted Review</response>
         /// <response code="400">Review is undefined</response>
-        /// <response code="409">Review for user and place exists</response>
+        /// <response code="409">Conflict, Review for user and place exists</response>
         [HttpPost]
         [ProducesResponseType(201)]
         [ProducesResponseType(400)]
         [ProducesResponseType(409)]
-        public async Task<ActionResult<Review>> PostReview(Review review)
+        public async Task<ActionResult<Review>> PostReview(NewReview newReview)
         {
-            if (review == null)
+            if (newReview == null)
             {
                 return BadRequest();
             }
 
-            if (!HasOwnedDataAccess(review.UserID))
+            if (!HasOwnedDataAccess(newReview.UserID))
             {
                 return Forbid();
             }
 
-            review.DateTime = DateTime.Now;
-
             //if location doesn't exist, add location to db
-            if (!await _context.Locations.AnyAsync(e => e.PlaceID == review.PlaceID).ConfigureAwait(false))
+            if (!await _context.Locations.AnyAsync(e => e.PlaceID == newReview.PlaceID).ConfigureAwait(false))
             {
-                var location = new Location(review.PlaceID);
+                var location = new Location(newReview.PlaceID);
                 _context.Locations.Add(location);
             }
 
-            _context.Reviews.Add(review);
+            _context.Reviews.Add(new Review
+            {
+                PlaceID = newReview.PlaceID,
+                UserID = newReview.UserID,
+                OverallRating = newReview.OverallRating,
+                LocationRating = newReview.LocationRating,
+                AmentitiesRating = newReview.AmentitiesRating,
+                ServiceRating = newReview.ServiceRating,
+                Comment = newReview.Comment
+            });
 
             try
             {
@@ -171,7 +178,7 @@ namespace API.Controllers
             }
             catch (DbUpdateException)
             {
-                if (await ReviewExists(review.PlaceID, review.UserID).ConfigureAwait(false))
+                if (await ReviewExists(newReview.PlaceID, newReview.UserID).ConfigureAwait(false))
                 {
                     return Conflict();
                 }
@@ -184,20 +191,20 @@ namespace API.Controllers
             return CreatedAtAction("GetReview",
                 new
                 {
-                    placeId = review.PlaceID,
-                    userId = review.UserID
+                    placeId = newReview.PlaceID,
+                    userId = newReview.UserID
                 },
-                review);
+                newReview);
         }
 
         /// <summary>
         /// Puts Updated Review
         /// </summary>
-        /// <param name="placeId">Place Id</param>
-        /// <param name="userId">User Id</param>
-        /// <param name="review">Review</param>
+        /// <param name="placeId">Reviews Place Id</param>
+        /// <param name="userId">Reviews User Id</param>
+        /// <param name="review">Updated Review</param>
         /// <returns>Action Result</returns>
-        /// <response code="204">Review Successfully Posted</response>
+        /// <response code="204">Review Successfully Updated</response>
         /// <response code="400">Invalid Input</response>
         /// <response code="404">Review Doesn't Exist</response>
         [HttpPut("{placeId}/{userId}")]
@@ -241,14 +248,14 @@ namespace API.Controllers
         /// <summary>
         /// Delete Specified Review
         /// </summary>
-        /// <param name="placeId">Place Id</param>
-        /// <param name="userId">User Id</param>
+        /// <param name="placeId">Place Id for Review</param>
+        /// <param name="userId">User Id for Review</param>
         /// <returns>Deleted Review</returns>
         /// <response code="200">Returns Deleted Review</response>
-        /// <response code="400">Review Not Found</response>
+        /// <response code="404">Review Not Found</response>
         [HttpDelete("{placeId}/{userId}")]
         [ProducesResponseType(200)]
-        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
         public async Task<ActionResult<Review>> DeleteReview(string placeId, string userId)
         {
             var review = await _context.Reviews.FindAsync(userId, placeId);

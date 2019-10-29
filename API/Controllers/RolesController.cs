@@ -84,18 +84,6 @@ namespace API.Controllers
         }
 
         /// <summary>
-        /// Put updated role
-        /// NOTE: Not Impimented yet
-        /// </summary>
-        /// <param name="roleId">Role Id</param>
-        /// <param name="role">Updated Role</param>
-        [HttpPut("{roleId}")]
-        public void PutRole(int roleId, IdentityRole role)
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
         /// Delete specified role
         /// </summary>
         /// <param name="roleId">Role Id</param>
