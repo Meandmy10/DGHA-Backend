@@ -7,5 +7,6 @@ namespace ModelsLibrary
     public class User : IdentityUser
     {
         public virtual ICollection<Review> Reviews { get; private set; }
+        public virtual ICollection<Complaint> Complaints { get; private set; }
     }
 }
