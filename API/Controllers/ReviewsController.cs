@@ -258,7 +258,7 @@ namespace API.Controllers
         [ProducesResponseType(404)]
         public async Task<ActionResult<Review>> DeleteReview(string placeId, string userId)
         {
-            var review = await _context.Reviews.FindAsync(userId, placeId);
+            var review = await _context.Reviews.FindAsync(placeId, userId);
 
             if (review == null)
             {
@@ -272,18 +272,28 @@ namespace API.Controllers
 
             _context.Reviews.Remove(review);
 
-            //If there are no reviews for location, delete location from db
-            if (!await _context.Reviews.AnyAsync(review => review.PlaceID == placeId).ConfigureAwait(false))
-            {
-                var location = await _context.Locations.FindAsync(review.PlaceID)
-                                                       .ConfigureAwait(false);
-                _context.Locations.Remove(location);
-            }
-
             await _context.SaveChangesAsync()
                           .ConfigureAwait(false);
 
+            //If there are no reviews for location, delete location from db
+            await UpdateLocationStatus(placeId).ConfigureAwait(false);
+
             return review;
+        }
+
+        private async Task UpdateLocationStatus(string placeId)
+        {
+            if (!await _context.Reviews.AnyAsync(review => review.PlaceID == placeId).ConfigureAwait(false) && 
+                !await _context.Complaints.AnyAsync(complaint => complaint.PlaceID == placeId).ConfigureAwait(false))
+            {
+                var location = await _context.Locations.FindAsync(placeId)
+                                                       .ConfigureAwait(false);
+
+                _context.Locations.Remove(location);
+
+                await _context.SaveChangesAsync()
+                              .ConfigureAwait(false);
+            }
         }
 
         private async Task<bool> ReviewExists(string placeId, string userId)

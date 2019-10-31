@@ -10,6 +10,10 @@ namespace API.Models
 {
     public class NewComplaint
     {
+        public NewComplaint()
+        {
+        }
+
         public NewComplaint(Complaint complaint)
         {
             UserID = complaint.UserID;
