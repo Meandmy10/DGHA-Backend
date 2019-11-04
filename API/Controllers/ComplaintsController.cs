@@ -79,7 +79,7 @@ namespace API.Controllers
         [HttpPost]
         [ProducesResponseType(201)]
         [ProducesResponseType(400)]
-        public async Task<ActionResult<Complaint>> PostComplaint(NewComplaint newComplaint)
+        public async Task<ActionResult<NewComplaint>> PostComplaint(NewComplaint newComplaint)
         {
             if (newComplaint == null)
             {
@@ -89,13 +89,6 @@ namespace API.Controllers
             if (!HasOwnedDataAccess(newComplaint.UserID))
             {
                 return Forbid();
-            }
-
-            //if location doesn't exist, add location to db
-            if (!await _context.Locations.AnyAsync(e => e.PlaceID == newComplaint.PlaceID).ConfigureAwait(false))
-            {
-                var location = new Location(newComplaint.PlaceID);
-                _context.Locations.Add(location);
             }
 
             _context.Complaints.Add(new Complaint 
@@ -117,11 +110,10 @@ namespace API.Controllers
                 throw;
             }
 
-            Complaint createdComplaint = await _context.Complaints.Where(c =>
+            Complaint createdComplaint = await _context.Complaints.FirstAsync(c =>
                                                                    c.UserID == newComplaint.UserID &&
-                                                                   c.PlaceID == newComplaint.PlaceID)
-                                                                  .OrderByDescending(c => c.TimeSubmitted)
-                                                                  .FirstAsync()
+                                                                   c.PlaceID == newComplaint.PlaceID &&
+                                                                   c.TimeSubmitted > timeBeforeSave)
                                                                   .ConfigureAwait(false);
 
             return CreatedAtAction("GetComplaint", new { 
@@ -199,28 +191,10 @@ namespace API.Controllers
             }
 
             _context.Complaints.Remove(complaint);
-
             await _context.SaveChangesAsync()
                           .ConfigureAwait(false);
 
-            await UpdateLocationStatus(placeId);
-
             return complaint;
-        }
-
-        private async Task UpdateLocationStatus(string placeId)
-        {
-            if (!await _context.Reviews.AnyAsync(review => review.PlaceID == placeId).ConfigureAwait(false) &&
-                !await _context.Complaints.AnyAsync(complaint => complaint.PlaceID == placeId).ConfigureAwait(false))
-            {
-                var location = await _context.Locations.FindAsync(placeId)
-                                                       .ConfigureAwait(false);
-
-                _context.Locations.Remove(location);
-
-                await _context.SaveChangesAsync()
-                              .ConfigureAwait(false);
-            }
         }
 
         private async Task<bool> ComplaintExists(string placeId, string userId, DateTime timeSubmitted)
