@@ -202,7 +202,7 @@ namespace API.Controllers
         /// </summary>
         /// <param name="placeId">Reviews Place Id</param>
         /// <param name="userId">Reviews User Id</param>
-        /// <param name="review">Updated Review</param>
+        /// <param name="updatedReview">Updated Review</param>
         /// <returns>Action Result</returns>
         /// <response code="204">Review Successfully Updated</response>
         /// <response code="400">Invalid Input</response>
@@ -211,19 +211,28 @@ namespace API.Controllers
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
-        public async Task<IActionResult> PutReview(string placeId, string userId, Review review)
+        public async Task<IActionResult> PutReview(string placeId, string userId, NewReview updatedReview)
         {
-            if (review == null || placeId != review.PlaceID || userId != review.UserID)
+            if (updatedReview == null || placeId != updatedReview.PlaceID || userId != updatedReview.UserID)
             {
                 return BadRequest();
             }
 
-            if (!HasOwnedDataAccess(review.UserID))
+            if (!HasOwnedDataAccess(updatedReview.UserID))
             {
                 return Forbid();
             }
 
-            _context.Entry(review).State = EntityState.Modified;
+            var review = await _context.Reviews.FindAsync(placeId, userId);
+
+            review.Comment = updatedReview.Comment;
+            review.AmentitiesRating = updatedReview.AmentitiesRating;
+            review.LocationRating = updatedReview.LocationRating;
+            review.OverallRating = updatedReview.OverallRating;
+            review.ServiceRating = updatedReview.ServiceRating;
+            review.TimeAdded = DateTime.Now;
+
+            _context.Entry(updatedReview).State = EntityState.Modified;
 
             try
             {
