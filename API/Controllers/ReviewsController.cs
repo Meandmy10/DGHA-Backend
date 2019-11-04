@@ -188,14 +188,13 @@ namespace API.Controllers
                 }
             }
 
-            return Ok(newReview);
-                //CreatedAtAction("GetReview",
-                //new
-                //{
-                //    placeId = newReview.PlaceID,
-                //    userId = newReview.UserID
-                //},
-                //newReview);
+            return CreatedAtAction("GetReview",
+                new
+                {
+                    placeId = newReview.PlaceID,
+                    userId = newReview.UserID
+                },
+                newReview);
         }
 
         /// <summary>
