@@ -12,7 +12,8 @@ namespace IdentityServer
             return new IdentityResource[]
             {
                 new IdentityResources.OpenId(),
-                new IdentityResources.Profile(),
+                new IdentityResource("role", new List<string> {"role"}),
+                new IdentityResource("email", new List<string> {"email"})
             };
         }
 
@@ -74,8 +75,11 @@ namespace IdentityServer
                     AllowedScopes =
                     {
                         IdentityServerConstants.StandardScopes.OpenId,
-                        "api"
-                    }
+                        "api",
+                        "role",
+                        "email"
+                    },
+                    AlwaysIncludeUserClaimsInIdToken = true,
                 }
             };
         }
