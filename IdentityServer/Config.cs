@@ -1,4 +1,5 @@
-﻿using IdentityServer4.Models;
+﻿using IdentityServer4;
+using IdentityServer4.Models;
 using IdentityServer4.Test;
 using System.Collections.Generic;
 
@@ -50,6 +51,31 @@ namespace IdentityServer
                         new Secret("secret".Sha256())
                     },
                     AllowedScopes = { "api" }
+                },
+
+                new Client
+                {
+                    ClientId = "AdminPortal",
+                    ClientName = "Admin Client",
+                    AllowedGrantTypes = GrantTypes.Code,
+                    RequirePkce = true,
+                    RequireConsent = false,
+                    //RequireClientSecret = false,
+
+                    RedirectUris =           { "http://localhost:4200/callback", "https://dgha-admin.azurewebsites.net/callback" },
+                    PostLogoutRedirectUris = { "http://localhost:4200/home", "https://dgha-admin.azurewebsites.net/home" },
+                    AllowedCorsOrigins =     { "http://localhost:4200", "https://dgha-admin.azurewebsites.net" },
+
+                    ClientSecrets =
+                    {
+                        new Secret("secret".Sha256())
+                    },
+
+                    AllowedScopes =
+                    {
+                        IdentityServerConstants.StandardScopes.OpenId,
+                        "api"
+                    }
                 }
             };
         }

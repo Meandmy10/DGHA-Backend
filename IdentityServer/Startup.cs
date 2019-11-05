@@ -27,14 +27,17 @@ namespace IdentityServer
         public void ConfigureServices(IServiceCollection services)
         {
             string apiUrl;
+            string adminUrl;
 
             if (Environment.IsDevelopment())
             {
                 apiUrl = "https://localhost:44383";
+                adminUrl = "http://localhost:4200";
             }
             else
             {
                 apiUrl = "https://dgha-api.azurewebsites.net";
+                adminUrl = "http://dgha-admin.azurewebsites.net";
             }
 
             services.AddCors(options =>
@@ -43,6 +46,7 @@ namespace IdentityServer
                 builder =>
                 {
                     builder.WithOrigins(apiUrl).AllowCredentials().AllowAnyHeader().AllowAnyMethod();
+                    builder.WithOrigins(adminUrl).AllowCredentials().AllowAnyHeader().AllowAnyMethod();
                 });
             });
 

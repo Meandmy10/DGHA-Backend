@@ -37,9 +37,31 @@ namespace API
             Environment = environment;
         }
 
+        readonly string MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            string adminUrl;
+
+            if (Environment.IsDevelopment())
+            {
+                adminUrl = "http://localhost:4200";
+            }
+            else
+            {
+                adminUrl = "https://dgha-admin.azurewebsites.net";
+            }
+
+            services.AddCors(options =>
+            {
+                options.AddPolicy(MyAllowSpecificOrigins,
+                builder =>
+                {
+                    builder.WithOrigins(adminUrl).AllowCredentials().AllowAnyHeader().AllowAnyMethod();
+                });
+            });
+
             services.AddControllers();
 
             // Register the Swagger generator, defining 1 or more Swagger documents
@@ -171,6 +193,8 @@ namespace API
             app.UseHttpsRedirection();
 
             app.UseRouting();
+
+            app.UseCors(MyAllowSpecificOrigins);
 
             app.UseAuthentication();
             app.UseAuthorization();
