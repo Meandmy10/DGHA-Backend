@@ -37,7 +37,7 @@ namespace IdentityServer
             else
             {
                 apiUrl = "https://dgha-api.azurewebsites.net";
-                adminUrl = "http://dgha-admin.azurewebsites.net";
+                adminUrl = "https://dgha-admin.azurewebsites.net";
             }
 
             services.AddCors(options =>
