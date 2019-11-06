@@ -69,10 +69,10 @@ namespace API.Controllers
 
             var placeReviews = new PlaceReviews
             {
-                AverageRating = (byte)reviews.Average(review => review.OverallRating),
-                AverageLocationRating = (byte)reviews.Average(review => review.LocationRating),
-                AverageAmentitiesRating = (byte)reviews.Average(review => review.AmentitiesRating),
-                AverageServiceRating = (byte)reviews.Average(review => review.ServiceRating),
+                AverageRating = (float)reviews.Average(review => review.OverallRating),
+                AverageLocationRating = (float)reviews.Average(review => review.LocationRating),
+                AverageAmentitiesRating = (float)reviews.Average(review => review.AmentitiesRating),
+                AverageServiceRating = (float)reviews.Average(review => review.ServiceRating),
                 Count = reviews.Count,
                 Reviews = reviews
             };
