@@ -46,11 +46,11 @@ namespace API.Controllers
         }
 
         /// <summary>
-        /// Gets All Reviews for requested Place Id
+        /// Gets Average ratings, Review count and first 5 reviews for requested Place Id
         /// </summary>
-        /// <param name="placeId">Place Id to get reviews for</param>
-        /// <returns>All Reviews from specified place id</returns>
-        /// <response code="200">Returns All Reviews from specified place</response>
+        /// <param name="placeId">Place Id to get information from</param>
+        /// <returns>PlaceReviews object for specified place id</returns>
+        /// <response code="200">Returns PlaceReviews object for specified place</response>
         /// <response code="404">No Reviews Found</response>
         [HttpGet("placeId/{placeId}")]
         [ProducesResponseType(200)]
@@ -74,10 +74,41 @@ namespace API.Controllers
                 AverageAmentitiesRating = (byte)reviews.Average(review => review.AmentitiesRating),
                 AverageServiceRating = (byte)reviews.Average(review => review.ServiceRating),
                 Count = reviews.Count,
-                Reviews = reviews
+                Reviews = reviews.OrderByDescending(review => review.TimeAdded).Take(5)
             };
 
             return placeReviews;
+        }
+
+
+
+        /// <summary>
+        /// Gets specified set of reviews for requested Place Id
+        /// </summary>
+        /// <param name="placeId">Place Id to get reviews for</param>
+        /// <param name="set">Set of reviews to get, starts at 0</param>
+        /// <returns>Review set from specified place id</returns>
+        /// <response code="200">Returns specified set of reviews from specified place</response>
+        /// <response code="404">No Reviews Found</response>
+        [HttpGet("placeId/{placeId}/{set}")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(404)]
+        [AllowAnonymous]
+        public async Task<ActionResult<IEnumerable<Review>>> GetPlaceReviews(string placeId, int set)
+        {
+            var reviews = await _context.Reviews.Where(review => review.PlaceID == placeId)
+                                                .OrderByDescending(review => review.TimeAdded)
+                                                .Skip(5 * set)
+                                                .Take(5)
+                                                .ToListAsync()
+                                                .ConfigureAwait(false);
+
+            if (reviews == null)
+            {
+                return NotFound();
+            }
+
+            return reviews;
         }
 
         /// <summary>
