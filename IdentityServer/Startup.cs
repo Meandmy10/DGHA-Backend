@@ -28,20 +28,17 @@ namespace IdentityServer
         {
             string apiUrl;
             string adminUrl;
-            string localAdminUrl;
 
             if (Environment.IsDevelopment())
             {
                 apiUrl = "https://localhost:44383";
                 adminUrl = "http://localhost:4200";
-                localAdminUrl = "http://localhost:4200";
 
             }
             else
             {
                 apiUrl = "https://dgha-api.azurewebsites.net";
                 adminUrl = "https://dgha-admin.azurewebsites.net";
-                localAdminUrl = "http://localhost:4200";
 
             }
 
@@ -52,7 +49,6 @@ namespace IdentityServer
                 {
                     builder.WithOrigins(apiUrl).AllowCredentials().AllowAnyHeader().AllowAnyMethod();
                     builder.WithOrigins(adminUrl).AllowCredentials().AllowAnyHeader().AllowAnyMethod();
-                    builder.WithOrigins(localAdminUrl).AllowCredentials().AllowAnyHeader().AllowAnyMethod();
 
                 });
             });
