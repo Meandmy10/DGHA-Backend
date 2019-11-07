@@ -46,7 +46,7 @@ namespace API.Controllers
         }
 
         /// <summary>
-        /// Gets Average ratings, Review count and first 5 reviews for requested Place Id
+        /// Gets Average ratings, Review count and first set (of 5) reviews for requested Place Id
         /// </summary>
         /// <param name="placeId">Place Id to get information from</param>
         /// <returns>PlaceReviews object for specified place id</returns>
@@ -80,10 +80,8 @@ namespace API.Controllers
             return placeReviews;
         }
 
-
-
         /// <summary>
-        /// Gets specified set of reviews for requested Place Id
+        /// Gets specified set (of 5) of reviews for requested Place Id
         /// </summary>
         /// <param name="placeId">Place Id to get reviews for</param>
         /// <param name="set">Set of reviews to get, starts at 0</param>

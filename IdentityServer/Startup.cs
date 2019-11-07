@@ -33,13 +33,11 @@ namespace IdentityServer
             {
                 apiUrl = "https://localhost:44383";
                 adminUrl = "http://localhost:4200";
-
             }
             else
             {
                 apiUrl = "https://dgha-api.azurewebsites.net";
                 adminUrl = "https://dgha-admin.azurewebsites.net";
-
             }
 
             services.AddCors(options =>
@@ -49,7 +47,6 @@ namespace IdentityServer
                 {
                     builder.WithOrigins(apiUrl).AllowCredentials().AllowAnyHeader().AllowAnyMethod();
                     builder.WithOrigins(adminUrl).AllowCredentials().AllowAnyHeader().AllowAnyMethod();
-
                 });
             });
 
@@ -64,38 +61,6 @@ namespace IdentityServer
             });
 
             services.AddDbContext<ApplicationDbContext>();
-
-            //if (Environment.IsDevelopment())
-            //{
-            //    services.AddDbContext<ApplicationDbContext>(options =>
-            //        options.UseSqlServer(Configuration.GetConnectionString("DevelopmentConnection")));
-            //}
-            //else
-            //{
-            //    services.AddDbContext<ApplicationDbContext>(options =>
-            //        options.UseSqlServer(Configuration.GetConnectionString("ProductionConnection"))); //currently the same as development connection.
-            //}
-
-            //services.Configure<IdentityOptions>(options =>
-            //{
-            //    // Password settings.
-            //    options.Password.RequireDigit = true;
-            //    options.Password.RequireLowercase = true;
-            //    options.Password.RequireNonAlphanumeric = true;
-            //    options.Password.RequireUppercase = true;
-            //    options.Password.RequiredLength = 6;
-            //    options.Password.RequiredUniqueChars = 1;
-
-            //    // Lockout settings.
-            //    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
-            //    options.Lockout.MaxFailedAccessAttempts = 5;
-            //    options.Lockout.AllowedForNewUsers = true;
-
-            //    // User settings.
-            //    options.User.AllowedUserNameCharacters =
-            //    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
-            //    options.User.RequireUniqueEmail = false;
-            //});
 
             services.AddIdentity<User, IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
@@ -170,8 +135,6 @@ namespace IdentityServer
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapDefaultControllerRoute();
-                //endpoints.MapControllers();
-                //endpoints.MapRazorPages();
             });
         }
     }
