@@ -10,10 +10,10 @@ namespace API.Models
 {
     public class PlaceReviews
     {
-        public byte AverageRating { get; set; }
-        public byte AverageLocationRating { get; set; }
-        public byte AverageAmentitiesRating { get; set; }
-        public byte AverageServiceRating { get; set; }
+        public float AverageRating { get; set; }
+        public float AverageLocationRating { get; set; }
+        public float AverageAmentitiesRating { get; set; }
+        public float AverageServiceRating { get; set; }
         public int Count { get; set; }
 
         public IEnumerable<Review> Reviews { get; set; }
