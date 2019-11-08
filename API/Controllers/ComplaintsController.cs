@@ -81,10 +81,10 @@ namespace API.Controllers
                 return BadRequest("Invalid Input");
             }
 
-            if (!await PlaceExists(newComplaint.PlaceID).ConfigureAwait(false))
-            {
-                return BadRequest("Place doesn't exist");
-            }
+            //if (!await PlaceExists(newComplaint.PlaceID).ConfigureAwait(false))
+            //{
+            //    return BadRequest("Place doesn't exist");
+            //}
 
             if (!HasOwnedDataAccess(newComplaint.UserID))
             {
