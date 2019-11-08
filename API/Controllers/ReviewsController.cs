@@ -20,14 +20,9 @@ namespace API.Controllers
     [Route("[controller]")]
     [ApiController]
     [Authorize(AuthenticationSchemes = "Bearer")]
-    public class ReviewsController : ControllerBase
+    public class ReviewsController : BaseController
     {
-        private readonly ApplicationDbContext _context;
-
-        public ReviewsController(ApplicationDbContext context)
-        {
-            _context = context;
-        }
+        public ReviewsController(ApplicationDbContext context) : base(context) { }
 
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
@@ -62,7 +57,7 @@ namespace API.Controllers
                                                 .ToListAsync()
                                                 .ConfigureAwait(false);
 
-            if (reviews == null)
+            if (reviews.Count == 0)
             {
                 return NotFound();
             }
@@ -87,13 +82,20 @@ namespace API.Controllers
         /// <param name="set">Set of reviews to get, starts at 0</param>
         /// <returns>Review set from specified place id</returns>
         /// <response code="200">Returns specified set of reviews from specified place</response>
+        /// <response code="400">Set number invalid</response>
         /// <response code="404">No Reviews Found</response>
         [HttpGet("placeId/{placeId}/{set}")]
         [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
         [ProducesResponseType(404)]
         [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<Review>>> GetPlaceReviews(string placeId, int set)
         {
+            if(set < 0)
+            {
+                return BadRequest();
+            }
+
             var reviews = await _context.Reviews.Where(review => review.PlaceID == placeId)
                                                 .OrderByDescending(review => review.TimeAdded)
                                                 .Skip(5 * set)
@@ -101,7 +103,7 @@ namespace API.Controllers
                                                 .ToListAsync()
                                                 .ConfigureAwait(false);
 
-            if (reviews == null)
+            if (reviews.Count == 0)
             {
                 return NotFound();
             }
@@ -126,7 +128,7 @@ namespace API.Controllers
                                                 .ToListAsync()
                                                 .ConfigureAwait(false);
 
-            if (reviews == null)
+            if (reviews.Count == 0)
             {
                 return NotFound();
             }
@@ -164,7 +166,7 @@ namespace API.Controllers
         /// <param name="newReview">Review to add</param>
         /// <returns>Added Review</returns>
         /// <response code="201">Returns Posted Review</response>
-        /// <response code="400">Review is undefined</response>
+        /// <response code="400">Bad Request</response>
         /// <response code="409">Conflict, Review for user and place exists</response>
         [HttpPost]
         [ProducesResponseType(201)]
@@ -172,7 +174,8 @@ namespace API.Controllers
         [ProducesResponseType(409)]
         public async Task<ActionResult<Review>> PostReview(NewReview newReview)
         {
-            if (newReview == null)
+            if (newReview == null || newReview.UserID == null || newReview.PlaceID == null || newReview.OverallRating == null 
+                /*|| !await PlaceExists(newReview.PlaceID).ConfigureAwait(false)*/)
             {
                 return BadRequest();
             }
@@ -210,6 +213,10 @@ namespace API.Controllers
                 if (await ReviewExists(newReview.PlaceID, newReview.UserID).ConfigureAwait(false))
                 {
                     return Conflict();
+                }
+                else if (!await UserExists(newReview.UserID).ConfigureAwait(false))
+                {
+                    return BadRequest();
                 }
                 else
                 {
@@ -253,6 +260,11 @@ namespace API.Controllers
             }
 
             var review = await _context.Reviews.FindAsync(placeId, userId);
+
+            if(review == null)
+            {
+                return NotFound();
+            }
 
             review.Comment = updatedReview.Comment;
             review.AmentitiesRating = updatedReview.AmentitiesRating;
@@ -319,45 +331,10 @@ namespace API.Controllers
             return review;
         }
 
-        private async Task UpdateLocationStatus(string placeId)
-        {
-            if (!await _context.Reviews.AnyAsync(review => review.PlaceID == placeId).ConfigureAwait(false) && 
-                !await _context.Complaints.AnyAsync(complaint => complaint.PlaceID == placeId).ConfigureAwait(false))
-            {
-                var location = await _context.Locations.FindAsync(placeId)
-                                                       .ConfigureAwait(false);
-
-                _context.Locations.Remove(location);
-
-                await _context.SaveChangesAsync()
-                              .ConfigureAwait(false);
-            }
-        }
-
         private async Task<bool> ReviewExists(string placeId, string userId)
         {
             return await _context.Reviews.AnyAsync(e => e.PlaceID == placeId && e.UserID == userId)
                                          .ConfigureAwait(false);
-        }
-
-        private bool HasOwnedDataAccess(string userId)
-        {
-            var claimsIdentity = (ClaimsIdentity)User.Identity;
-            var claim = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
-            if (claim.Value == userId)
-            {
-                return true;
-            }
-            else
-            {
-                var roleClaims = claimsIdentity.FindAll(ClaimTypes.Role);
-                if (roleClaims.Any(claim => claim.Value == "Administrator"))
-                {
-                    return true;
-                }
-            }
-
-            return false;
         }
     }
 }

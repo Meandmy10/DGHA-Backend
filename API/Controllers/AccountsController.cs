@@ -14,6 +14,7 @@ using Microsoft.Extensions.Logging;
 using ModelsLibrary;
 using System.Security.Claims;
 using System.Security.Principal;
+using ModelsLibrary.Data;
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 namespace API.Controllers
@@ -22,7 +23,7 @@ namespace API.Controllers
     [Route("[controller]")]
     [ApiController]
     [Authorize(AuthenticationSchemes = "Bearer")]
-    public class AccountsController : ControllerBase
+    public class AccountsController : AuthorizedController
     {
 
         private readonly UserManager<User> _userManager;
@@ -274,26 +275,6 @@ namespace API.Controllers
             }
 
             return NoContent();
-        }
-
-        private bool HasOwnedDataAccess(string userId)
-        {
-            var claimsIdentity = (ClaimsIdentity)User.Identity;
-            var claim = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
-            if(claim.Value == userId)
-            {
-                return true;
-            }
-            else
-            {
-                var roleClaims = claimsIdentity.FindAll(ClaimTypes.Role);
-                if(roleClaims.Any(claim => claim.Value == "Administrator"))
-                {
-                    return true;
-                }
-            }
-
-            return false;
         }
     }
 }

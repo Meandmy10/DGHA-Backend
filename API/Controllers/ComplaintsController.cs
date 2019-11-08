@@ -19,14 +19,9 @@ namespace API.Controllers
     [Route("[controller]")]
     [ApiController]
     [Authorize(AuthenticationSchemes = "Bearer")]
-    public class ComplaintsController : ControllerBase
+    public class ComplaintsController : BaseController
     {
-        private readonly ApplicationDbContext _context;
-
-        public ComplaintsController(ApplicationDbContext context)
-        {
-            _context = context;
-        }
+        public ComplaintsController(ApplicationDbContext context) : base(context) { }
 
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
@@ -75,13 +70,14 @@ namespace API.Controllers
         /// <param name="newComplaint">Complaint to add</param>
         /// <returns>Added Complaint</returns>
         /// <response code="201">Returns Posted Review</response>
-        /// <response code="400">Review is undefined</response>
+        /// <response code="400">Bad Request</response>
         [HttpPost]
         [ProducesResponseType(201)]
         [ProducesResponseType(400)]
         public async Task<ActionResult<Complaint>> PostComplaint(NewComplaint newComplaint)
         {
-            if (newComplaint == null)
+            if (newComplaint == null || newComplaint.PlaceID == null || newComplaint.UserID == null 
+                /*|| !await PlaceExists(newComplaint.PlaceID).ConfigureAwait(false)*/)
             {
                 return BadRequest();
             }
@@ -114,7 +110,14 @@ namespace API.Controllers
             }
             catch (DbUpdateException)
             {
-                throw;
+                if (!await UserExists(newComplaint.UserID).ConfigureAwait(false))
+                {
+                    return BadRequest();
+                }
+                else
+                {
+                    throw;
+                }
             }
 
             Complaint createdComplaint = await _context.Complaints.Where(c =>
@@ -130,7 +133,7 @@ namespace API.Controllers
                 timeSubmitted = createdComplaint.TimeSubmitted 
             }, 
             createdComplaint);
-    }
+        }
 
         /// <summary>
         /// Puts updated complaint
@@ -193,6 +196,7 @@ namespace API.Controllers
         public async Task<ActionResult<Complaint>> DeleteComplaint(string placeId, string userId, DateTime timeSubmitted)
         {
             var complaint = await _context.Complaints.FindAsync(placeId, userId, timeSubmitted);
+
             if (complaint == null)
             {
                 return NotFound();
@@ -203,50 +207,15 @@ namespace API.Controllers
             await _context.SaveChangesAsync()
                           .ConfigureAwait(false);
 
-            await UpdateLocationStatus(placeId);
+            await UpdateLocationStatus(placeId).ConfigureAwait(false);
 
             return complaint;
-        }
-
-        private async Task UpdateLocationStatus(string placeId)
-        {
-            if (!await _context.Reviews.AnyAsync(review => review.PlaceID == placeId).ConfigureAwait(false) &&
-                !await _context.Complaints.AnyAsync(complaint => complaint.PlaceID == placeId).ConfigureAwait(false))
-            {
-                var location = await _context.Locations.FindAsync(placeId)
-                                                       .ConfigureAwait(false);
-
-                _context.Locations.Remove(location);
-
-                await _context.SaveChangesAsync()
-                              .ConfigureAwait(false);
-            }
         }
 
         private async Task<bool> ComplaintExists(string placeId, string userId, DateTime timeSubmitted)
         {
             return await _context.Complaints.AnyAsync(e => e.PlaceID == placeId && e.UserID == userId && e.TimeSubmitted == timeSubmitted)
                                             .ConfigureAwait(false);
-        }
-
-        private bool HasOwnedDataAccess(string userId)
-        {
-            var claimsIdentity = (ClaimsIdentity)User.Identity;
-            var claim = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
-            if (claim.Value == userId)
-            {
-                return true;
-            }
-            else
-            {
-                var roleClaims = claimsIdentity.FindAll(ClaimTypes.Role);
-                if (roleClaims.Any(claim => claim.Value == "Administrator"))
-                {
-                    return true;
-                }
-            }
-
-            return false;
         }
     }
 }
