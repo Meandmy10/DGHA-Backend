@@ -93,7 +93,7 @@ namespace API.Controllers
         {
             if(set < 0)
             {
-                return BadRequest();
+                return BadRequest("Invalid Set");
             }
 
             var reviews = await _context.Reviews.Where(review => review.PlaceID == placeId)
@@ -174,11 +174,15 @@ namespace API.Controllers
         [ProducesResponseType(409)]
         public async Task<ActionResult<Review>> PostReview(NewReview newReview)
         {
-            if (newReview == null || newReview.UserID == null || newReview.PlaceID == null || newReview.OverallRating == null 
-                /*|| !await PlaceExists(newReview.PlaceID).ConfigureAwait(false)*/)
+            if (newReview == null || newReview.UserID == null || newReview.PlaceID == null)
             {
-                return BadRequest();
+                return BadRequest("Invalid Input");
             }
+
+            //if (!await PlaceExists(newReview.PlaceID).ConfigureAwait(false))
+            //{
+            //    return BadRequest("Place doesn't exist");
+            //}
 
             if (!HasOwnedDataAccess(newReview.UserID))
             {
@@ -208,15 +212,15 @@ namespace API.Controllers
                 await _context.SaveChangesAsync()
                               .ConfigureAwait(false);
             }
-            catch (DbUpdateException)
+            catch (DbUpdateException e)
             {
                 if (await ReviewExists(newReview.PlaceID, newReview.UserID).ConfigureAwait(false))
                 {
-                    return Conflict();
+                    return Conflict(e.InnerException.Message);
                 }
                 else if (!await UserExists(newReview.UserID).ConfigureAwait(false))
                 {
-                    return BadRequest();
+                    return BadRequest(e.InnerException.Message);
                 }
                 else
                 {
@@ -251,7 +255,7 @@ namespace API.Controllers
         {
             if (updatedReview == null || placeId != updatedReview.PlaceID || userId != updatedReview.UserID)
             {
-                return BadRequest();
+                return BadRequest("Invalid Input");
             }
 
             if (!HasOwnedDataAccess(updatedReview.UserID))

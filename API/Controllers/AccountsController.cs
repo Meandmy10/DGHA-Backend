@@ -168,7 +168,7 @@ namespace API.Controllers
 
             if (!result.Succeeded)
             {
-                return BadRequest();
+                return BadRequest(result.Errors);
             }
 
             return NoContent();
@@ -228,7 +228,7 @@ namespace API.Controllers
 
             if(user == null)
             {
-                return NotFound("User not found");
+                return NotFound();
             }
 
             var result = await _userManager.AddToRoleAsync(user, roleName)
@@ -263,7 +263,7 @@ namespace API.Controllers
 
             if (user == null)
             {
-                return NotFound("User not found");
+                return NotFound();
             }
 
             var result = await _userManager.RemoveFromRoleAsync(user, roleName)

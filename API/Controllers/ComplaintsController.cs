@@ -76,10 +76,14 @@ namespace API.Controllers
         [ProducesResponseType(400)]
         public async Task<ActionResult<Complaint>> PostComplaint(NewComplaint newComplaint)
         {
-            if (newComplaint == null || newComplaint.PlaceID == null || newComplaint.UserID == null 
-                /*|| !await PlaceExists(newComplaint.PlaceID).ConfigureAwait(false)*/)
+            if (newComplaint == null || newComplaint.PlaceID == null || newComplaint.UserID == null)
             {
-                return BadRequest();
+                return BadRequest("Invalid Input");
+            }
+
+            if (!await PlaceExists(newComplaint.PlaceID).ConfigureAwait(false))
+            {
+                return BadRequest("Place doesn't exist");
             }
 
             if (!HasOwnedDataAccess(newComplaint.UserID))
@@ -108,11 +112,11 @@ namespace API.Controllers
                 await _context.SaveChangesAsync()
                               .ConfigureAwait(false);
             }
-            catch (DbUpdateException)
+            catch (DbUpdateException e)
             {
                 if (!await UserExists(newComplaint.UserID).ConfigureAwait(false))
                 {
-                    return BadRequest();
+                    return BadRequest(e.InnerException.Message);
                 }
                 else
                 {
@@ -155,7 +159,7 @@ namespace API.Controllers
         {
             if (complaint == null || placeId != complaint.PlaceID || userId != complaint.UserID || timeSubmitted != complaint.TimeSubmitted)
             {
-                return BadRequest();
+                return BadRequest("Invalid Input");
             }
 
             _context.Entry(complaint).State = EntityState.Modified;
