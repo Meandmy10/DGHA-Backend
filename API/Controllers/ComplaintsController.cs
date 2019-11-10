@@ -94,7 +94,7 @@ namespace API.Controllers
             //if location doesn't exist, add location to db
             if (!await _context.Locations.AnyAsync(e => e.PlaceID == newComplaint.PlaceID).ConfigureAwait(false))
             {
-                var location = new Location(newComplaint.PlaceID);
+                var location = new ModelsLibrary.Location(newComplaint.PlaceID);
                 _context.Locations.Add(location);
             }
 
