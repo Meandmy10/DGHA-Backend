@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using API.Models;
-using API.Models.APIResponse;
 using Newtonsoft.Json;
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
