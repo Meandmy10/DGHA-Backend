@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 #pragma warning disable CA1034 // Nested types should not be visible
 #pragma warning disable CA1052 // Static holder types should be Static or NotInheritable
 
-namespace API.Models.APIResponse {
+namespace API.Models {
     public class AddressComponent {
         public string long_name { get; set; }
         public string short_name { get; set; }
@@ -27,10 +27,5 @@ namespace API.Models.APIResponse {
         public List<object> html_attributions { get; set; }
         public Result result { get; set; }
         public string status { get; set; }
-    }
-
-    public enum PlaceQueryType {
-        SearchById = 0,
-        SearchByText = 1
     }
 }
