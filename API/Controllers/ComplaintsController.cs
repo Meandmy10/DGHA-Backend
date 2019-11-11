@@ -26,18 +26,102 @@ namespace API.Controllers
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         /// <summary>
-        /// Gets all complaints
+        /// Gets all unresolved complaints in dictionaries split with place then status
         /// </summary>
-        /// <returns>All complaints</returns>
-        /// <response code="200">Returns All Complaints</response>
+        /// <returns>All unresolved complaints in dictionaries split with place then status</returns>
+        /// <response code="200">Returns All unresolved complaints dictionaries split with place then status</response>
         [HttpGet]
         [Authorize(Roles = "Administrator")]
         [ProducesResponseType(200)]
-        public async Task<ActionResult<IEnumerable<Complaint>>> GetComplaints()
+        public async Task<ActionResult<Dictionary<string, Dictionary<string, List<SimpleComplaint>>>>> GetComplaints()
         {
-            return await _context.Complaints.OrderBy(complaint => complaint.PlaceID)
-                                            .ThenBy(complaint => complaint.Status)
-                                            .ThenByDescending(complaint => complaint.TimeLastUpdated)
+            List<UserComplaint> complaints = await _context.Complaints
+                .Join(_context.Users,
+                c => c.UserID,
+                u => u.Id,
+                (c, u) => new { Complaint = c, User = u })
+                .Where(cu => cu.Complaint.UserID == cu.User.Id)
+                .Where(cu => cu.Complaint.Status != "Resolved")
+                .OrderBy(cu => cu.Complaint.PlaceID)
+                .ThenBy(cu => cu.Complaint.Status)
+                .Select(cu => new UserComplaint()
+                {
+                    UserEmail = cu.User.Email,
+                    Comment = cu.Complaint.Comment,
+                    PlaceID = cu.Complaint.PlaceID,
+                    Status = cu.Complaint.Status,
+                    TimeLastUpdated = cu.Complaint.TimeLastUpdated,
+                    TimeSubmitted = cu.Complaint.TimeSubmitted,
+                    UserID = cu.User.Id
+                })
+                .ToListAsync()
+                .ConfigureAwait(false);
+
+            string location = complaints.First().PlaceID;
+            string status = complaints.First().Status;
+
+            Dictionary<string, Dictionary<string, List<SimpleComplaint>>>
+                complaintsLocations = new Dictionary<string, Dictionary<string, List<SimpleComplaint>>>
+                {
+                    { location, new Dictionary<string, List<SimpleComplaint>>()
+                    {
+                        { status, new List<SimpleComplaint>()
+                            { new SimpleComplaint(complaints.First()) }
+                        }
+                    }
+                    }
+                };
+
+            for (int i = 1; i < complaints.Count; i++)
+            {
+                if(complaints[i].PlaceID == location)
+                {
+                    //add to existing dic
+                    if (complaints[i].Status == status)
+                    {
+                        //add to current status dic
+                        complaintsLocations[location][status].Add(new SimpleComplaint(complaints[i]));
+                    }
+                    else
+                    {
+                        //update status and add new dic
+                        status = complaints[i].Status;
+                        complaintsLocations[location].Add(status, new List<SimpleComplaint>()
+                        {
+                            new SimpleComplaint(complaints[i])
+                        });
+                    }
+                }
+                else
+                {
+                    //create new dic and update location and status
+                    location = complaints[i].PlaceID;
+                    status = complaints[i].Status;
+                    complaintsLocations.Add(location, 
+                        new Dictionary<string, List<SimpleComplaint>>() 
+                        { 
+                            { status, new List<SimpleComplaint>() 
+                                { new SimpleComplaint(complaints[i]) } 
+                            }
+                        });
+                }
+            }
+
+            return complaintsLocations;
+        }
+
+        /// <summary>
+        /// Gets all resolved complaints
+        /// </summary>
+        /// <returns>All resolved complaints</returns>
+        /// <response code="200">Returns All resolved complaints in ComplaintsLocaiton Objects</response>
+        [HttpGet("Resolved")]
+        [Authorize(Roles = "Administrator")]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<IEnumerable<Complaint>>> GetResolvedComplaints()
+        {
+            return await _context.Complaints.Where(complaint => complaint.Status == "Resolved")
+                                            .OrderByDescending(complaint => complaint.TimeLastUpdated)
                                             .ToListAsync()
                                             .ConfigureAwait(false);
         }
