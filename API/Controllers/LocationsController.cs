@@ -1,109 +1,82 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ModelsLibrary;
 using ModelsLibrary.Data;
 
+// MODELS
+using API.Models;
+using API.Models.APIResponse;
+
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+#pragma warning disable CA1031
+#pragma warning disable CA2007
 
-namespace API.Controllers
-{
-    [Produces("application/json")]
-    [Route("[controller]")]
+namespace API.Controllers {
     [ApiController]
-    public class LocationsController : ControllerBase
-    {
+    [Route ("location")]
+    public class LocationController : Controller {
         private readonly ApplicationDbContext _context;
-
-        public LocationsController(ApplicationDbContext context)
-        {
+        public LocationController (ApplicationDbContext context) {
             _context = context;
         }
 
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
+        [HttpGet ("all")]
+        public async IAsyncEnumerable<ActionResult<Place>> getAllLocation () {
+            List<string> allPlaceIds = await _context.Reviews.Select ((review) => review.PlaceID).Distinct ().ToListAsync ().ConfigureAwait (false);
 
-        /// <summary>
-        /// Gets Locations for specified search term and location (optional)
-        /// NOTE: Not Implimented Yet
-        /// </summary>
-        /// <param name="searchTerm">Search Term</param>
-        /// <param name="location">Location (Optional)</param>
-        /// <returns></returns>
-        [HttpGet]
-        public async Task<IEnumerable<Location>> GetLocations(string searchTerm, string location = "Australia")
-        {
-            throw new NotImplementedException();
+            foreach (string id in allPlaceIds) {
+                var result = await HttpReq.getPlaceByIdFromGoogle(id).ConfigureAwait (false);
+                List<Review> placeReviews = await _context.Reviews.Where (review => review.PlaceID == id).ToListAsync ().ConfigureAwait (true);
+
+                Place place = new Place ();
+                place.PlaceId = id;
+                place.Name = result.name;
+                place.Address = result.formatted_address;
+                place.Types = result.types;
+                place.State = result.address_components[result.address_components.Count - 3].long_name;
+                place.numOfRatings = placeReviews.Count;
+                place.avgOverallRating = (float) placeReviews.Average (review => review.OverallRating);
+                place.avgCustomerRating = (float) placeReviews.Average (review => review.ServiceRating);
+                place.avgLocationRating = (float) placeReviews.Average (review => review.LocationRating);
+                place.avgAmentitiesRating = (float) placeReviews.Average (review => review.AmentitiesRating);
+
+                yield return place;
+            }
         }
 
-        /// <summary>
-        /// Gets Requested Location
-        /// NOTE: Not Impimented Yet
-        /// </summary>
-        /// <param name="placeId">Place Id</param>
-        /// <returns></returns>
-        [HttpGet("{placeId}")]
-        public async Task<Location> GetLocation(string placeId)
-        {
-            throw new NotImplementedException();
+        // sort by state and stars between 4 and 5
+        [HttpGet ("recommend")]
+        public async IAsyncEnumerable<ActionResult<Place>> getRecommendedLocation (string state) {
+            List<string> allPlaceIds = await _context.Reviews.Select ((review) => review.PlaceID).Distinct ().ToListAsync ().ConfigureAwait (false);
+
+            foreach (string id in allPlaceIds) {
+                List<Review> placeReviews = await _context.Reviews.Where (review => review.PlaceID == id).ToListAsync ().ConfigureAwait (false);
+                double avgOverallRating = placeReviews.Average (r => r.OverallRating);
+
+                if (avgOverallRating >= 4) {
+                    var result = await HttpReq.getPlaceByIdFromGoogle(id).ConfigureAwait (false);
+                    string placeState = result.address_components[result.address_components.Count - 3].long_name;
+
+                    if (result.address_components[result.address_components.Count - 3].long_name.ToLower () == state.ToLower ()) {
+                        Place place = new Place ();
+                        place.PlaceId = id;
+                        place.Name = result.name;
+                        place.Address = result.formatted_address;
+                        place.Types = result.types;
+                        place.State = result.address_components[result.address_components.Count - 3].long_name;
+                        place.numOfRatings = placeReviews.Count;
+                        place.avgOverallRating = (float) placeReviews.Average (review => review.OverallRating);
+                        place.avgCustomerRating = (float) placeReviews.Average (review => review.ServiceRating);
+                        place.avgLocationRating = (float) placeReviews.Average (review => review.LocationRating);
+                        place.avgAmentitiesRating = (float) placeReviews.Average (review => review.AmentitiesRating);
+
+                        yield return place; 
+                    }
+                }
+            }
         }
-
-        //public async Task<ActionResult<Review>> PostLocation(Location location)
-        //{
-        //    if (location == null)
-        //    {
-        //        return BadRequest();
-        //    }
-
-        //    _context.Locations.Add(location);
-
-        //    try
-        //    {
-        //        await _context.SaveChangesAsync()
-        //                      .ConfigureAwait(false);
-        //    }
-        //    catch (DbUpdateException)
-        //    {
-        //        if (LocationExists(location.PlaceID))
-        //        {
-        //            return Conflict();
-        //        }
-        //        else
-        //        {
-        //            throw;
-        //        }
-        //    }
-
-        //    return CreatedAtAction("GetLocation",
-        //        new
-        //        {
-        //            placeId = location.PlaceID
-        //        },
-        //        location);
-        //}
-
-        //public async Task<ActionResult<Location>> DeleteLocation(string placeId)
-        //{
-        //    var location = await _context.Locations.FindAsync(placeId);
-
-        //    if (location == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    _context.Locations.Remove(location);
-        //    await _context.SaveChangesAsync()
-        //                  .ConfigureAwait(false);
-
-        //    return location;
-        //}
-
-        //private bool LocationExists(string placeId)
-        //{
-        //    return _context.Locations.Any(e => e.PlaceID == placeId);
-        //}
     }
 }
+
