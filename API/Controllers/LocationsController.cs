@@ -1,13 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using API.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using ModelsLibrary;
 using ModelsLibrary.Data;
-
-// MODELS
-using API.Models;
-using API.Models.APIResponse;
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 #pragma warning disable CA1031
@@ -24,51 +20,76 @@ namespace API.Controllers {
 
         [HttpGet ("all")]
         public async IAsyncEnumerable<ActionResult<Place>> getAllLocation () {
-            List<string> allPlaceIds = await _context.Reviews.Select ((review) => review.PlaceID).Distinct ().ToListAsync ().ConfigureAwait (false);
 
-            foreach (string id in allPlaceIds) {
-                var result = await HttpReq.getPlaceByIdFromGoogle (id).ConfigureAwait (false);
-                List<Review> placeReviews = await _context.Reviews.Where (review => review.PlaceID == id).ToListAsync ().ConfigureAwait (true);
+            List<Place> allPlaces = await _context.Reviews
+                .GroupBy (x => x.PlaceID)
+                .Select (g => new Place {
+                    PlaceId = g.Key,
+                    avgOverallRating = g.Average (p => p.OverallRating),
+                    avgCustomerRating = g.Average (p => p.ServiceRating),
+                    avgLocationRating = g.Average (p => p.LocationRating),
+                    avgAmentitiesRating = g.Average (p => p.AmentitiesRating),
+                    numOfRatings = g.Count (p => p.PlaceID != null)
+                }).ToListAsync ().ConfigureAwait (false);
 
-                yield return createPlace(id, result, placeReviews); 
+            foreach (var item in allPlaces) {
+                var apiPlace = await HttpReq.getPlaceByIdFromGoogle (item.PlaceId).ConfigureAwait (false);
+                Place place = new Place ();
+                place = setPlaceDetails (place, apiPlace);
+                place = setPlaceRatings (place, item);
+
+                yield return place;
             }
         }
 
         // sort by state and stars between 4 and 5
         [HttpGet ("recommend")]
         public async IAsyncEnumerable<ActionResult<Place>> getRecommendedLocation (string state) {
-            List<string> allPlaceIds = await _context.Reviews.Select ((review) => review.PlaceID).Distinct ().ToListAsync ().ConfigureAwait (false);
 
-            foreach (string id in allPlaceIds) {
-                List<Review> placeReviews = await _context.Reviews.Where (review => review.PlaceID == id).ToListAsync ().ConfigureAwait (false);
-                double avgOverallRating = placeReviews.Average (r => r.OverallRating);
+            List<Place> placeWithHighRating = await _context.Reviews
+                .GroupBy (x => x.PlaceID)
+                .Where (g => g.Average (p => p.OverallRating) >= 4)
+                .OrderByDescending (g => g.Count (p => p.PlaceID != null))
+                .ThenByDescending (g => g.Average (p => p.OverallRating))
+                .Select (g => new Place {
+                    PlaceId = g.Key,
+                    avgOverallRating = g.Average (p => p.OverallRating),
+                    avgCustomerRating = g.Average (p => p.ServiceRating),
+                    avgLocationRating = g.Average (p => p.LocationRating),
+                    avgAmentitiesRating = g.Average (p => p.AmentitiesRating),
+                    numOfRatings = g.Count (p => p.PlaceID != null)
+                }).ToListAsync ().ConfigureAwait (false);
 
-                if (avgOverallRating >= 4) {
-                    var result = await HttpReq.getPlaceByIdFromGoogle (id).ConfigureAwait (false);
-                    string placeState = result.address_components[result.address_components.Count - 3].long_name;
+            foreach (Place item in placeWithHighRating) {
+                var apiPlace = await HttpReq.getPlaceByIdFromGoogle (item.PlaceId).ConfigureAwait (false);
+                string placeState = apiPlace.address_components[apiPlace.address_components.Count - 3].long_name.ToLower ();
+                if (placeState == state.ToLower ()) {
+                    Place place = new Place ();
+                    place = setPlaceDetails (place, apiPlace);
+                    place = setPlaceRatings (place, item);
 
-                    if (result.address_components[result.address_components.Count - 3].long_name.ToLower () == state.ToLower ()) {
-                        Place place = new Place ();
-                        
-
-                        yield return createPlace(id, result, placeReviews); 
-                    }
+                    yield return place;
                 }
             }
         }
-        private Place createPlace (string id, Result result, List<Review> placeReviews) {
-            Place place = new Place ();
 
-            place.PlaceId = id;
-            place.Name = result.name;
-            place.Address = result.formatted_address;
-            place.Types = result.types;
-            place.State = result.address_components[result.address_components.Count - 3].long_name;
-            place.numOfRatings = placeReviews.Count;
-            place.avgOverallRating = (float) placeReviews.Average (review => review.OverallRating);
-            place.avgCustomerRating = (float) placeReviews.Average (review => review.ServiceRating);
-            place.avgLocationRating = (float) placeReviews.Average (review => review.LocationRating);
-            place.avgAmentitiesRating = (float) placeReviews.Average (review => review.AmentitiesRating);
+        private Place setPlaceDetails (Place place, Result apiPlace) {
+            place.PlaceId = apiPlace.place_id;
+            place.Name = apiPlace.name;
+            place.Address = apiPlace.formatted_address;
+            place.Types = apiPlace.types;
+            place.State = apiPlace.address_components[apiPlace.address_components.Count - 3].long_name;
+
+            return place;
+        }
+
+        private Place setPlaceRatings (Place place, Place databasePlace) {
+            place.numOfRatings = databasePlace.numOfRatings;
+            place.avgOverallRating = databasePlace.avgOverallRating;
+            place.avgCustomerRating = databasePlace.avgCustomerRating;
+            place.avgLocationRating = databasePlace.avgLocationRating;
+            place.avgAmentitiesRating = databasePlace.avgAmentitiesRating;
+
             return place;
         }
     }
