@@ -23,34 +23,42 @@ namespace API.Controllers {
 
         [HttpGet]
         public async IAsyncEnumerable<Place> getSearch (string query) {
-            var results = await HttpReq.getPlaceByTextFromGoogle (query).ConfigureAwait (false);
+            List<Results> results = await HttpReq.getPlaceByTextFromGoogle (query).ConfigureAwait (false);
 
-            foreach (var item in results) {
-                string placeId = item.place_id;
+            foreach (Results item in results) {
+                List<Review> databaseReviews = await _context.Reviews
+                    .Where (review => review.PlaceID == item.place_id)
+                    .ToListAsync ()
+                    .ConfigureAwait (true);
 
                 Place place = new Place ();
-                place.PlaceId = placeId;
-                place.Name = item.name;
-                place.Address = item.formatted_address;
-                place.Types = item.types;
+                place = setPlaceDetails (place, item);
 
-                // In this case, state doesn't matter
-                place.State = null;             
-
-                // get the reviews
-                List<Review> placeReviews = await _context.Reviews.Where (review => review.PlaceID == placeId).ToListAsync ().ConfigureAwait (true);
-
-                if (placeReviews.Count > 0) {
-                    place.numOfRatings = placeReviews.Count;
-                    place.avgOverallRating = (float) placeReviews.Average (review => review.OverallRating);
-                    place.avgCustomerRating = (float) placeReviews.Average (review => review.ServiceRating);
-                    place.avgLocationRating = (float) placeReviews.Average (review => review.LocationRating);
-                    place.avgAmentitiesRating = (float) placeReviews.Average (review => review.AmentitiesRating);
-
+                if (databaseReviews.Count > 0) {
+                    place = setPlaceRating (place, databaseReviews);
                 }
 
                 yield return place;
             }
+        }
+
+        private Place setPlaceDetails (Place place, Results apiPlace) {
+            place.PlaceId = apiPlace.place_id;
+            place.Name = apiPlace.name;
+            place.Address = apiPlace.formatted_address;
+            place.Types = apiPlace.types;
+
+            return place;
+        }
+
+        private Place setPlaceRating (Place place, List<Review> databaseReviews) {
+            place.numOfRatings = databaseReviews.Count;
+            place.avgOverallRating = databaseReviews.Average (review => review.OverallRating);
+            place.avgCustomerRating = databaseReviews.Average (review => review.ServiceRating);
+            place.avgLocationRating = databaseReviews.Average (review => review.LocationRating);
+            place.avgAmentitiesRating = databaseReviews.Average (review => review.AmentitiesRating);
+
+            return place;
         }
     }
 }
