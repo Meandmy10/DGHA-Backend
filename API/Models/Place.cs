@@ -6,22 +6,21 @@ using System.Threading.Tasks;
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 #pragma warning disable CA2227 // Collection properties should be read only
 
-
-namespace API.Models
-{
-    public class Place
-    {
+/* TODO: Get nearby places
+*  Right now, we're getting the recommended places by state,
+*  If we want be precise, we can use lat and long so we can calculate the distance
+*/
+namespace API.Models {
+    public class Place {
         public string PlaceId { get; set; }
         public string Name { get; set; }
         public string Address { get; set; }
+        public string State {get; set;}
         public List<string> Types { get; set; }
-
-        public Place(string placeId, string name, string address, List<string> types)
-        {
-            this.PlaceId = placeId;
-            this.Name = name;
-            this.Address = address;
-            this.Types = types;
-        }
+        public float avgOverallRating { get; set; }
+        public float avgCustomerRating { get; set; }
+        public float avgAmentitiesRating { get; set; }
+        public float avgLocationRating { get; set; }
+        public int numOfRatings { get; set; }
     }
 }
