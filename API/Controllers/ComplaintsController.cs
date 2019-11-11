@@ -35,7 +35,10 @@ namespace API.Controllers
         [ProducesResponseType(200)]
         public async Task<ActionResult<IEnumerable<Complaint>>> GetComplaints()
         {
-            return await _context.Complaints.ToListAsync()
+            return await _context.Complaints.OrderBy(complaint => complaint.PlaceID)
+                                            .ThenBy(complaint => complaint.Status)
+                                            .ThenByDescending(complaint => complaint.TimeLastUpdated)
+                                            .ToListAsync()
                                             .ConfigureAwait(false);
         }
 
