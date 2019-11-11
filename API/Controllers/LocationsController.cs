@@ -27,22 +27,10 @@ namespace API.Controllers {
             List<string> allPlaceIds = await _context.Reviews.Select ((review) => review.PlaceID).Distinct ().ToListAsync ().ConfigureAwait (false);
 
             foreach (string id in allPlaceIds) {
-                var result = await HttpReq.getPlaceByIdFromGoogle(id).ConfigureAwait (false);
+                var result = await HttpReq.getPlaceByIdFromGoogle (id).ConfigureAwait (false);
                 List<Review> placeReviews = await _context.Reviews.Where (review => review.PlaceID == id).ToListAsync ().ConfigureAwait (true);
 
-                Place place = new Place ();
-                place.PlaceId = id;
-                place.Name = result.name;
-                place.Address = result.formatted_address;
-                place.Types = result.types;
-                place.State = result.address_components[result.address_components.Count - 3].long_name;
-                place.numOfRatings = placeReviews.Count;
-                place.avgOverallRating = (float) placeReviews.Average (review => review.OverallRating);
-                place.avgCustomerRating = (float) placeReviews.Average (review => review.ServiceRating);
-                place.avgLocationRating = (float) placeReviews.Average (review => review.LocationRating);
-                place.avgAmentitiesRating = (float) placeReviews.Average (review => review.AmentitiesRating);
-
-                yield return place;
+                yield return createPlace(id, result, placeReviews); 
             }
         }
 
@@ -56,27 +44,33 @@ namespace API.Controllers {
                 double avgOverallRating = placeReviews.Average (r => r.OverallRating);
 
                 if (avgOverallRating >= 4) {
-                    var result = await HttpReq.getPlaceByIdFromGoogle(id).ConfigureAwait (false);
+                    var result = await HttpReq.getPlaceByIdFromGoogle (id).ConfigureAwait (false);
                     string placeState = result.address_components[result.address_components.Count - 3].long_name;
 
                     if (result.address_components[result.address_components.Count - 3].long_name.ToLower () == state.ToLower ()) {
                         Place place = new Place ();
-                        place.PlaceId = id;
-                        place.Name = result.name;
-                        place.Address = result.formatted_address;
-                        place.Types = result.types;
-                        place.State = result.address_components[result.address_components.Count - 3].long_name;
-                        place.numOfRatings = placeReviews.Count;
-                        place.avgOverallRating = (float) placeReviews.Average (review => review.OverallRating);
-                        place.avgCustomerRating = (float) placeReviews.Average (review => review.ServiceRating);
-                        place.avgLocationRating = (float) placeReviews.Average (review => review.LocationRating);
-                        place.avgAmentitiesRating = (float) placeReviews.Average (review => review.AmentitiesRating);
+                        
 
-                        yield return place; 
+                        yield return createPlace(id, result, placeReviews); 
                     }
                 }
             }
         }
-    }
-}
+        private Place createPlace (string id, Result result, List<Review> placeReviews) {
+            Place place = new Place ();
 
+            place.PlaceId = id;
+            place.Name = result.name;
+            place.Address = result.formatted_address;
+            place.Types = result.types;
+            place.State = result.address_components[result.address_components.Count - 3].long_name;
+            place.numOfRatings = placeReviews.Count;
+            place.avgOverallRating = (float) placeReviews.Average (review => review.OverallRating);
+            place.avgCustomerRating = (float) placeReviews.Average (review => review.ServiceRating);
+            place.avgLocationRating = (float) placeReviews.Average (review => review.LocationRating);
+            place.avgAmentitiesRating = (float) placeReviews.Average (review => review.AmentitiesRating);
+            return place;
+        }
+    }
+
+}
