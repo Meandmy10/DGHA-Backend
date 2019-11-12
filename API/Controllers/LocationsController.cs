@@ -53,8 +53,8 @@ namespace API.Controllers {
                 }
             }
 
-            int maxNum = possiblePlacesToSend.Count; 
-            int[] randUniqueNums = getRandUniNums(0, maxNum, maxNum >= 20 ? 20 : maxNum); 
+            int maxNum = possiblePlacesToSend.Count;
+            int[] randUniqueNums = getRandUniNums(0, maxNum, maxNum >= 20 ? 20 : maxNum);
 
             foreach (var num in randUniqueNums) {
                 placesToSend.Add (possiblePlacesToSend[num]);
@@ -91,6 +91,34 @@ namespace API.Controllers {
 
             searchResponse.nextPageToken = paqr.next_page_token;
             return searchResponse;
+        }
+
+        // NOTE: This is temporary until the other endpoint is fixed
+        [HttpGet ("reviews")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        public async Task<ActionResult<List<Review>>> getReviewsByPlaceId (string placeId, int set) {
+
+            if(set < 0)
+            {
+                return BadRequest("Invalid Set");
+            }
+
+            List<Review> reviews = await _context.Reviews
+                .Where (review => review.PlaceID == placeId && review.Comment != "")
+                .OrderByDescending (reviews => reviews.TimeAdded)
+                .Skip (5 * set)
+                .Take (5)
+                .ToListAsync ()
+                .ConfigureAwait (false);
+
+            if (reviews.Count == 0)
+            {
+                return NotFound();
+            }
+
+            return reviews;
         }
 
         private int[] getRandUniNums (int minNumber, int maxNumber, int amount) {
