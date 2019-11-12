@@ -23,6 +23,10 @@ identityserver4_log.txt
 # Visual Studio Code
 .vscode
 
+# Lee's testing repo yml files
+azure-pipelines-1.yml
+azure-pipelines.yml
+
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/
