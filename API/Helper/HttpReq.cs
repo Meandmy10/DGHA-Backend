@@ -31,8 +31,8 @@ public class HttpReq {
         }
     }
 
-    public static async Task<List<Results>> getPlaceByTextFromGoogle(string query) {
-        string url =$"https://maps.googleapis.com/maps/api/place/textsearch/json?query={query}&fields=place_id&key={HttpReq.apiKey}";
+    public static async Task<PlaceAPIQueryResponse> getPlaceByTextFromGoogle(string query, string nextPageToken) {
+        string url =$"https://maps.googleapis.com/maps/api/place/textsearch/json?query={query}&fields=place_id&key={HttpReq.apiKey}&pagetoken={nextPageToken}";
 
         try {
             using (HttpClient client = new HttpClient ()) {
@@ -40,9 +40,8 @@ public class HttpReq {
                     using (HttpContent content = res.Content) {
                         var rawData = await content.ReadAsStringAsync ().ConfigureAwait (true);
                         var dataObj = JsonConvert.DeserializeObject<PlaceAPIQueryResponse> (rawData);
-                        var result = dataObj.results;
 
-                        return result;
+                        return dataObj;
                     }
                 }
             }
