@@ -104,12 +104,13 @@ namespace API.Controllers {
             {
                 return BadRequest("Invalid Set");
             }
-
+            
+            // taking 6 so that the front-end knows if there's more reviews to come
             List<Review> reviews = await _context.Reviews
                 .Where (review => review.PlaceID == placeId && review.Comment != "")
                 .OrderByDescending (reviews => reviews.TimeAdded)
                 .Skip (5 * set)
-                .Take (5)
+                .Take (6)
                 .ToListAsync ()
                 .ConfigureAwait (false);
 
