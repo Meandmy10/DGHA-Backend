@@ -10,7 +10,7 @@ public class CreatePlace {
     public static Place setPlaceFromIdDetails (Place place, Result apiPlace) {
         place.PlaceId = apiPlace.place_id;
         place.Name = apiPlace.name;
-        place.Address = apiPlace.formatted_address;
+        place.Address = formatAddress(apiPlace.formatted_address);
         place.Types = apiPlace.types;
         place.State = apiPlace.address_components[apiPlace.address_components.Count - 3].long_name;
 
@@ -20,7 +20,7 @@ public class CreatePlace {
     public static Place setPlaceFromTextDetails (Place place, Results apiPlace) {
         place.PlaceId = apiPlace.place_id;
         place.Name = apiPlace.name;
-        place.Address = apiPlace.formatted_address;
+        place.Address = formatAddress(apiPlace.formatted_address);
         place.Types = apiPlace.types;
 
         return place;
@@ -44,5 +44,18 @@ public class CreatePlace {
         place.avgAmentitiesRating = databaseReviews.Average (review => review.AmentitiesRating);
 
         return place;
+    }
+
+    private static string formatAddress(string input) {
+        string[] states = new string[] {"QLD", "NSW", "ACT", "VIC", "SA", "WA", "TAS", "NT"};
+
+        for(int i = 0; i < states.Length; i++) {
+            if(input.Contains(states[i])) {
+                int indexOfState = input.IndexOf(states[i]);
+                input = input.Substring(0, indexOfState - 1); 
+            }
+        }
+
+        return input; 
     }
 }
