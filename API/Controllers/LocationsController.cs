@@ -17,7 +17,11 @@ namespace API.Controllers {
     [Route ("location")]
     public class LocationController : Controller {
         private readonly ApplicationDbContext _context;
-        private readonly string[] _states = new string[] { "QLD", "NSW", "ACT", "VIC", "SA", "WA", "TAS", "NT" };
+        private readonly string[] _shortStates = new string[] { 
+            "QLD", "NSW", "ACT", "VIC", "SA", "WA", "TAS", "NT"};
+        private readonly string[] _longStates = new string[] {
+            "queensland", "new_south_wales", "victoria", "south_australia", "western_australia", "tasmania", "nortern_territory"
+        };
         public LocationController (ApplicationDbContext context) {
             _context = context;
         }
@@ -34,7 +38,7 @@ namespace API.Controllers {
         [ProducesResponseType (400)]
         public async Task<ActionResult<List<Place>>> getRecommendedLocation (string state) {
             
-            if(!_states.Contains(state)) {
+            if(!_longStates.Contains(state.ToLower())) {
                 return BadRequest(); 
             }
 
@@ -200,9 +204,9 @@ namespace API.Controllers {
         // Ger rid of state, postcode and country in address string
         private string formatAddress (string input) {
 
-            for (int i = 0; i < _states.Length; i++) {
-                if (input.Contains (_states[i])) {
-                    int indexOfState = input.IndexOf (_states[i]);
+            for (int i = 0; i < _shortStates.Length; i++) {
+                if (input.Contains (_shortStates[i])) {
+                    int indexOfState = input.IndexOf (_shortStates[i]);
                     input = input.Substring (0, indexOfState - 1);
                 }
             }
