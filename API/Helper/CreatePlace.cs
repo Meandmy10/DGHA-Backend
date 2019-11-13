@@ -7,44 +7,12 @@ using ModelsLibrary;
 #pragma warning disable CA1031
 
 public class CreatePlace {
-    public static Place setPlaceFromIdDetails (Place place, Result apiPlace) {
-        place.PlaceId = apiPlace.place_id;
-        place.Name = apiPlace.name;
-        place.Address = formatAddress(apiPlace.formatted_address);
-        place.Types = apiPlace.types;
-        place.State = apiPlace.address_components[apiPlace.address_components.Count - 3].long_name;
-
-        return place;
-    }
-
-    public static Place setPlaceFromTextDetails (Place place, Results apiPlace) {
-        place.PlaceId = apiPlace.place_id;
-        place.Name = apiPlace.name;
-        place.Address = formatAddress(apiPlace.formatted_address);
-        place.Types = apiPlace.types;
-
-        return place;
-    }
-
-    public static Place setPlaceFromIdRatings (Place place, Place databasePlace) {
-        place.numOfAllReviews = databasePlace.numOfAllReviews;
-        place.numOfWrittenReviews = databasePlace.numOfWrittenReviews;
-        place.avgOverallRating = databasePlace.avgOverallRating;
-        place.avgCustomerRating = databasePlace.avgCustomerRating;
-        place.avgLocationRating = databasePlace.avgLocationRating;
-        place.avgAmentitiesRating = databasePlace.avgAmentitiesRating;
-
-        return place;
-    }
-
-    public static Place setPlaceFromTextRatings (Place place, List<Review> databaseReviews) {
-        place.numOfAllReviews = databaseReviews.Count;
-        place.numOfWrittenReviews = databaseReviews.Count(review => review.Comment != "");
-        place.avgOverallRating = databaseReviews.Average (review => review.OverallRating);
-        place.avgCustomerRating = databaseReviews.Average (review => review.ServiceRating);
-        place.avgLocationRating = databaseReviews.Average (review => review.LocationRating);
-        place.avgAmentitiesRating = databaseReviews.Average (review => review.AmentitiesRating);
-
+    public static Place setPlaceDetails (Place place, IdPlaceResult idPlace, SearchPlaceResult searchPlace) {
+        place.PlaceId = searchPlace != null ? searchPlace.place_id : idPlace.place_id; 
+        place.Name = searchPlace != null ? searchPlace.name : idPlace.name; 
+        place.Address = searchPlace != null ? formatAddress(searchPlace.formatted_address) : formatAddress(idPlace.formatted_address);
+        place.Types = searchPlace != null ? searchPlace.types : idPlace.types;
+        place.State = idPlace != null ? idPlace.address_components[idPlace.address_components.Count - 3].long_name : null;
         return place;
     }
 
