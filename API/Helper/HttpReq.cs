@@ -10,7 +10,7 @@ using Newtonsoft.Json;
 
 public class HttpReq {
     private static string apiKey = "AIzaSyCj1t28RYFPFpa1xL_kjlIwCrH8CEryoJs";
-    public static async Task<Result> getPlaceByIdFromGoogle (string id) {
+    public static async Task<IdPlaceResult> getPlaceByIdFromGoogle (string id) {
         string url = $"https://maps.googleapis.com/maps/api/place/details/json?place_id={id}&fields=place_id,types,name,address_components,formatted_address&key={HttpReq.apiKey}";
 
         try {

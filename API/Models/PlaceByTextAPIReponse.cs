@@ -60,7 +60,7 @@ namespace API.Models
         public string global_code { get; set; }
     }
 
-    public class Results
+    public class SearchPlaceResult
     {
         public string formatted_address { get; set; }
         public Geometry geometry { get; set; }
@@ -82,7 +82,7 @@ namespace API.Models
     {
         public List<object> html_attributions { get; set; }
         public string next_page_token { get; set; }
-        public List<Results> results { get; set; }
+        public List<SearchPlaceResult> results { get; set; }
         public string status { get; set; }
     }
 }

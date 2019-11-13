@@ -15,7 +15,7 @@ namespace API.Models {
         public List<string> types { get; set; }
     }
 
-    public class Result {
+    public class IdPlaceResult {
         public List<AddressComponent> address_components { get; set; }
         public string formatted_address { get; set; }
         public string name { get; set; }
@@ -25,7 +25,7 @@ namespace API.Models {
 
     public class PlaceIdQueryResponse {
         public List<object> html_attributions { get; set; }
-        public Result result { get; set; }
+        public IdPlaceResult result { get; set; }
         public string status { get; set; }
     }
 }
