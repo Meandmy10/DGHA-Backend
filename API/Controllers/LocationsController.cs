@@ -25,8 +25,10 @@ namespace API.Controllers {
         [HttpGet ("recommend")]
         [ProducesResponseType (200)]
         public async Task<ActionResult<List<Place>>> getRecommendedLocation (string state) {
-            List<Place> possiblePlacesToSend = new List<Place> ();
-            List<Place> placesToSend = new List<Place> ();
+            List<Place> filteredPlaces = new List<Place> (); // Places within the user's state
+            List<Place> placesToSend = new List<Place> (); // Randomised places to send to user
+            List<Task<Place>> getPlaceDetailsTaskList = new List<Task<Place>> (); // Tasks for the google places API call
+
             List<Place> placeWithHighRating = await _context.Reviews
                 .GroupBy (x => x.PlaceID)
                 .Where (g => g.Average (p => p.OverallRating) >= 4)
@@ -37,26 +39,24 @@ namespace API.Controllers {
                         avgLocationRating = g.Average (p => p.LocationRating),
                         avgAmentitiesRating = g.Average (p => p.AmentitiesRating),
                         numOfAllReviews = g.Count (),
-                        numOfWrittenReviews = g.Sum(p => p.Comment != "" ? 1 : 0)
+                        numOfWrittenReviews = g.Sum (p => p.Comment != "" ? 1 : 0)
                 }).ToListAsync ().ConfigureAwait (false);
 
-            foreach (Place item in placeWithHighRating) {
-                var apiPlace = await HttpReq.getPlaceByIdFromGoogle (item.PlaceId).ConfigureAwait (false);
-                string placeState = apiPlace.address_components[apiPlace.address_components.Count - 3].long_name.ToLower ();
-                if (placeState == state.ToLower ()) {
-                    Place place = new Place ();
-                    place = CreatePlace.setPlaceFromIdDetails (place, apiPlace);
-                    place = CreatePlace.setPlaceFromIdRatings (place, item);
-
-                    possiblePlacesToSend.Add (place);
-                }
+            foreach (var item in placeWithHighRating) {
+                Task<Place> task = filterPlaceByState (item, state);
+                getPlaceDetailsTaskList.Add (task);
             }
 
-            int maxNum = possiblePlacesToSend.Count;
+            var taskData = await Task.WhenAll (getPlaceDetailsTaskList.ToArray ());
+
+            // if the place is not within the user's state, it will be returned as null 
+            filteredPlaces = taskData.Where (p => p != null).ToList ();
+
+            int maxNum = filteredPlaces.Count - 1;
             int[] randUniqueNums = getRandUniNums (0, maxNum, maxNum >= 20 ? 20 : maxNum);
 
             foreach (var num in randUniqueNums) {
-                placesToSend.Add (possiblePlacesToSend[num]);
+                placesToSend.Add (filteredPlaces[num]);
             }
 
             return placesToSend;
@@ -67,37 +67,32 @@ namespace API.Controllers {
         [ProducesResponseType (404)]
         public async Task<ActionResult<SearchResponse>> getSearch (string query, string nextPageToken) {
             SearchResponse searchResponse = new SearchResponse ();
-            PlaceAPIQueryResponse paqr = await HttpReq.getPlaceByTextFromGoogle (query, nextPageToken).ConfigureAwait (false);
+            PlaceAPIQueryResponse paqr = await HttpReq.getPlaceByTextFromGoogle (query, nextPageToken).ConfigureAwait (true);
 
             if (paqr.results.Count == 0) {
                 return NotFound ();
             }
 
-            foreach (Results item in paqr.results) {
+            for (int i = 0; i < paqr.results.Count; i++) {
+                Place place = await _context.Reviews
+                    .Where (review => review.PlaceID == paqr.results[i].place_id)
+                    .GroupBy (p => p.PlaceID)
+                    .Select (g => new Place {
+                        PlaceId = g.Key,
+                            avgOverallRating = g.Average (p => p.OverallRating),
+                            avgCustomerRating = g.Average (p => p.ServiceRating),
+                            avgLocationRating = g.Average (p => p.LocationRating),
+                            avgAmentitiesRating = g.Average (p => p.AmentitiesRating),
+                            numOfAllReviews = g.Count (),
+                            numOfWrittenReviews = g.Sum (p => p.Comment != "" ? 1 : 0)
+                    })
+                    .FirstOrDefaultAsync ().ConfigureAwait (true);
 
-                // Place soemthing = await _context.Reviews
-                // .Where(review => review.PlaceID == item.place_id)
-                // // .GroupJoin()
-                // .Select(g => new Place {
-                //     PlaceId = g.PlaceID,
-                //     avgOverallRating = g.Average (p => p.OverallRating),
-                //     avgCustomerRating = g.Average (p => p.ServiceRating),
-                //     avgLocationRating = g.Average (p => p.LocationRating),
-                //     avgAmentitiesRating = g.Average (p => p.AmentitiesRating),
-                //     numOfAllReviews = g.Count(),
-                //     numOfWrittenReviews = g.Count (p => p.Comment != "")
-                // });
-                List<Review> databaseReviews = await _context.Reviews
-                    .Where (review => review.PlaceID == item.place_id)
-                    .ToListAsync ()
-                    .ConfigureAwait (true);
-
-                Place place = new Place ();
-                place = CreatePlace.setPlaceFromTextDetails (place, item);
-
-                if (databaseReviews.Count > 0) {
-                    place = CreatePlace.setPlaceFromTextRatings (place, databaseReviews);
+                if(place == null) {
+                    place = new Place();
                 }
+
+                CreatePlace.setPlaceDetails (place, null, paqr.results[i]);
                 searchResponse.results.Add (place);
             }
 
@@ -131,13 +126,28 @@ namespace API.Controllers {
             return reviews;
         }
 
+        private async Task<Place> filterPlaceByState (Place databasePlace, string state) {
+            var apiPlace = await HttpReq.getPlaceByIdFromGoogle (databasePlace.PlaceId).ConfigureAwait (true);
+            string placeState = apiPlace.address_components[apiPlace.address_components.Count - 3].long_name.ToLower ();
+
+            if (placeState == state.ToLower ()) {
+                Place place = databasePlace;
+                place = CreatePlace.setPlaceDetails (place, apiPlace, null);
+                return place;
+            }
+
+            return null;
+        }
+
         private int[] getRandUniNums (int minNumber, int maxNumber, int amount) {
-            return Enumerable
-                .Range (minNumber, maxNumber)
-                .OrderBy (g => Guid.NewGuid ())
-                .Take (amount)
-                .ToArray ();
+            Random random = new Random ();
+            int[] randUniNums = new int[20];
+
+            for (int i = 0; i < randUniNums.Length; i++) {
+                randUniNums[i] = random.Next (minNumber, maxNumber);
+            }
+
+            return randUniNums;
         }
     }
-
 }
