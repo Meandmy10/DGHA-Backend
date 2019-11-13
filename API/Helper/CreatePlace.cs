@@ -27,7 +27,8 @@ public class CreatePlace {
     }
 
     public static Place setPlaceFromIdRatings (Place place, Place databasePlace) {
-        place.numOfRatings = databasePlace.numOfRatings;
+        place.numOfAllReviews = databasePlace.numOfAllReviews;
+        place.numOfWrittenReviews = databasePlace.numOfWrittenReviews;
         place.avgOverallRating = databasePlace.avgOverallRating;
         place.avgCustomerRating = databasePlace.avgCustomerRating;
         place.avgLocationRating = databasePlace.avgLocationRating;
@@ -37,7 +38,8 @@ public class CreatePlace {
     }
 
     public static Place setPlaceFromTextRatings (Place place, List<Review> databaseReviews) {
-        place.numOfRatings = databaseReviews.Count;
+        place.numOfAllReviews = databaseReviews.Count;
+        place.numOfWrittenReviews = databaseReviews.Count(review => review.Comment != "");
         place.avgOverallRating = databaseReviews.Average (review => review.OverallRating);
         place.avgCustomerRating = databaseReviews.Average (review => review.ServiceRating);
         place.avgLocationRating = databaseReviews.Average (review => review.LocationRating);

@@ -30,15 +30,14 @@ namespace API.Controllers {
             List<Place> placeWithHighRating = await _context.Reviews
                 .GroupBy (x => x.PlaceID)
                 .Where (g => g.Average (p => p.OverallRating) >= 4)
-                .OrderByDescending (g => g.Count (p => p.PlaceID != null))
-                .ThenByDescending (g => g.Average (p => p.OverallRating))
                 .Select (g => new Place {
                     PlaceId = g.Key,
                         avgOverallRating = g.Average (p => p.OverallRating),
                         avgCustomerRating = g.Average (p => p.ServiceRating),
                         avgLocationRating = g.Average (p => p.LocationRating),
                         avgAmentitiesRating = g.Average (p => p.AmentitiesRating),
-                        numOfRatings = g.Count (p => p.PlaceID != null)
+                        numOfAllReviews = g.Count(),
+                        numOfWrittenReviews = g.Count (p => p.Comment != "")
                 }).ToListAsync ().ConfigureAwait (false);
 
             foreach (Place item in placeWithHighRating) {
@@ -54,7 +53,7 @@ namespace API.Controllers {
             }
 
             int maxNum = possiblePlacesToSend.Count;
-            int[] randUniqueNums = getRandUniNums(0, maxNum, maxNum >= 20 ? 20 : maxNum);
+            int[] randUniqueNums = getRandUniNums (0, maxNum, maxNum >= 20 ? 20 : maxNum);
 
             foreach (var num in randUniqueNums) {
                 placesToSend.Add (possiblePlacesToSend[num]);
@@ -95,28 +94,25 @@ namespace API.Controllers {
 
         // NOTE: This is temporary until the other endpoint is fixed
         [HttpGet ("reviews")]
-        [ProducesResponseType(200)]
-        [ProducesResponseType(400)]
-        [ProducesResponseType(404)]
+        [ProducesResponseType (200)]
+        [ProducesResponseType (400)]
+        [ProducesResponseType (404)]
         public async Task<ActionResult<List<Review>>> getReviewsByPlaceId (string placeId, int set) {
 
-            if(set < 0)
-            {
-                return BadRequest("Invalid Set");
+            if (set < 0) {
+                return BadRequest ("Invalid Set");
             }
-            
-            // taking 6 so that the front-end knows if there's more reviews to come
+
             List<Review> reviews = await _context.Reviews
                 .Where (review => review.PlaceID == placeId && review.Comment != "")
                 .OrderByDescending (reviews => reviews.TimeAdded)
                 .Skip (5 * set)
-                .Take (6)
+                .Take (5)
                 .ToListAsync ()
                 .ConfigureAwait (false);
 
-            if (reviews.Count == 0)
-            {
-                return NotFound();
+            if (reviews.Count == 0) {
+                return NotFound ();
             }
 
             return reviews;

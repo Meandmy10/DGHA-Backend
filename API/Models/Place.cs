@@ -21,6 +21,8 @@ namespace API.Models {
         public double avgCustomerRating { get; set; }
         public double avgAmentitiesRating { get; set; }
         public double avgLocationRating { get; set; }
-        public int numOfRatings { get; set; }
+        public int numOfAllReviews { get; set; }
+        public int numOfWrittenReviews { get; set; }
+
     }
 }
