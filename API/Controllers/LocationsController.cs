@@ -36,8 +36,8 @@ namespace API.Controllers {
                         avgCustomerRating = g.Average (p => p.ServiceRating),
                         avgLocationRating = g.Average (p => p.LocationRating),
                         avgAmentitiesRating = g.Average (p => p.AmentitiesRating),
-                        numOfAllReviews = g.Count(),
-                        numOfWrittenReviews = g.Count (p => p.Comment != "")
+                        numOfAllReviews = g.Count (),
+                        numOfWrittenReviews = g.Sum(p => p.Comment != "" ? 1 : 0)
                 }).ToListAsync ().ConfigureAwait (false);
 
             foreach (Place item in placeWithHighRating) {
@@ -74,6 +74,19 @@ namespace API.Controllers {
             }
 
             foreach (Results item in paqr.results) {
+
+                // Place soemthing = await _context.Reviews
+                // .Where(review => review.PlaceID == item.place_id)
+                // // .GroupJoin()
+                // .Select(g => new Place {
+                //     PlaceId = g.PlaceID,
+                //     avgOverallRating = g.Average (p => p.OverallRating),
+                //     avgCustomerRating = g.Average (p => p.ServiceRating),
+                //     avgLocationRating = g.Average (p => p.LocationRating),
+                //     avgAmentitiesRating = g.Average (p => p.AmentitiesRating),
+                //     numOfAllReviews = g.Count(),
+                //     numOfWrittenReviews = g.Count (p => p.Comment != "")
+                // });
                 List<Review> databaseReviews = await _context.Reviews
                     .Where (review => review.PlaceID == item.place_id)
                     .ToListAsync ()
