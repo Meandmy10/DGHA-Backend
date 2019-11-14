@@ -20,6 +20,13 @@ identityserver4_log.txt
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
+# Visual Studio Code
+.vscode
+
+# Lee's testing repo yml files
+azure-pipelines-1.yml
+azure-pipelines.yml
+
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/

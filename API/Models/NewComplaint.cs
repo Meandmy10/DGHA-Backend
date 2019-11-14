@@ -16,6 +16,7 @@ namespace API.Models
 
         public NewComplaint(Complaint complaint)
         {
+            if (complaint == null) throw new ArgumentNullException(nameof(complaint));
             UserID = complaint.UserID;
             PlaceID = complaint.PlaceID;
             Comment = complaint.Comment;

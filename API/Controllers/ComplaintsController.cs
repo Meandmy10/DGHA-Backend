@@ -21,7 +21,12 @@ namespace API.Controllers
     [Authorize(AuthenticationSchemes = "Bearer")]
     public class ComplaintsController : BaseController
     {
-        public ComplaintsController(ApplicationDbContext context) : base(context) { }
+        private readonly ApplicationDbContext _context;
+
+        public ComplaintsController(ApplicationDbContext context) : base(context)
+        {
+            _context = context;
+        }
 
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
