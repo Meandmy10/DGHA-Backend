@@ -26,10 +26,10 @@ namespace API.Controllers
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         /// <summary>
-        /// Gets all unresolved complaints in dictionaries split with place then status
+        /// Gets all unresolved complaints devided in complaintLocation objects
         /// </summary>
-        /// <returns>All unresolved complaints in dictionaries split with place then status</returns>
-        /// <response code="200">Returns All unresolved complaints dictionaries split with place then status</response>
+        /// <returns>All unresolved complaints devided in complaintLocation objects</returns>
+        /// <response code="200">Returns All unresolved complaints devided in complaintLocation objects</response>
         [HttpGet]
         [Authorize(Roles = "Administrator")]
         [ProducesResponseType(200)]
@@ -50,6 +50,7 @@ namespace API.Controllers
                 .ConfigureAwait(false);
 
             string location = complaints.First().Complaint.PlaceID;
+            int locationNo = 0;
 
             List<ComplaintLocation> complaintLocations = new List<ComplaintLocation>()
             {
@@ -79,7 +80,7 @@ namespace API.Controllers
                 if (complaints[i].Complaint.PlaceID == location)
                 {
                     //add to existing list
-                    complaintLocations[i].Complaints.Add(new SimpleComplaint()
+                    complaintLocations[locationNo].Complaints.Add(new SimpleComplaint()
                     {
                         UserID = complaints[i].User.Id,
                         UserEmail = complaints[i].User.Email,
@@ -110,6 +111,9 @@ namespace API.Controllers
                             }
                         }
                     });
+
+                    location = complaints[i].Complaint.PlaceID;
+                    locationNo++;
                 }
             }
 
