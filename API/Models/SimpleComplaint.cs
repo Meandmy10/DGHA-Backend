@@ -8,27 +8,20 @@ using System.Threading.Tasks;
 
 namespace API.Models
 {
+    public class ComplaintLocation
+    {
+        public string PlaceId { get; set; }
+        public List<SimpleComplaint> Complaints { get; set; }
+    }
+
     public class SimpleComplaint
     {
-        public SimpleComplaint(UserComplaint complaint)
-        {
-            UserID = complaint.UserID;
-            TimeSubmitted = complaint.TimeSubmitted;
-            Comment = complaint.Comment;
-            TimeLastUpdated = complaint.TimeLastUpdated;
-            UserEmail = complaint.UserEmail;
-        }
-
         public string UserID { get; set; }
         public string UserEmail { get; set; }
         public DateTime TimeSubmitted { get; set; }
 
         public string Comment { get; set; }
         public DateTime TimeLastUpdated { get; set; }
-    }
-
-    public class UserComplaint : Complaint
-    {
-        public string UserEmail { get; set; }
+        public string Status { get; set; }
     }
 }

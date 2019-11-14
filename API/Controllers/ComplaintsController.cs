@@ -33,9 +33,9 @@ namespace API.Controllers
         [HttpGet]
         [Authorize(Roles = "Administrator")]
         [ProducesResponseType(200)]
-        public async Task<ActionResult<Dictionary<string, Dictionary<string, List<SimpleComplaint>>>>> GetComplaints()
+        public async Task<ActionResult<List<ComplaintLocation>>> GetComplaints()
         {
-            List<UserComplaint> complaints = await _context.Complaints
+            var complaints = await _context.Complaints
                 .Join(_context.Users,
                 c => c.UserID,
                 u => u.Id,
@@ -43,71 +43,77 @@ namespace API.Controllers
                 .Where(cu => cu.Complaint.UserID == cu.User.Id)
                 .Where(cu => cu.Complaint.Status != "Resolved")
                 .OrderBy(cu => cu.Complaint.PlaceID)
-                .ThenBy(cu => cu.Complaint.Status)
-                .Select(cu => new UserComplaint()
-                {
-                    UserEmail = cu.User.Email,
-                    Comment = cu.Complaint.Comment,
-                    PlaceID = cu.Complaint.PlaceID,
-                    Status = cu.Complaint.Status,
-                    TimeLastUpdated = cu.Complaint.TimeLastUpdated,
-                    TimeSubmitted = cu.Complaint.TimeSubmitted,
-                    UserID = cu.User.Id
-                })
+                .ThenByDescending(cu => cu.Complaint.TimeLastUpdated)
+                .ThenByDescending(cu => cu.Complaint.TimeSubmitted)
+                //.ThenBy(cu => cu.Complaint.Status)
                 .ToListAsync()
                 .ConfigureAwait(false);
 
-            string location = complaints.First().PlaceID;
-            string status = complaints.First().Status;
+            string location = complaints.First().Complaint.PlaceID;
 
-            Dictionary<string, Dictionary<string, List<SimpleComplaint>>>
-                complaintsLocations = new Dictionary<string, Dictionary<string, List<SimpleComplaint>>>
+            List<ComplaintLocation> complaintLocations = new List<ComplaintLocation>()
+            {
                 {
-                    { location, new Dictionary<string, List<SimpleComplaint>>()
+                    new ComplaintLocation()
                     {
-                        { status, new List<SimpleComplaint>()
-                            { new SimpleComplaint(complaints.First()) }
+                        PlaceId = location,
+                        Complaints = new List<SimpleComplaint>()
+                        {
+                            new SimpleComplaint()
+                            {
+                                UserID = complaints.First().User.Id,
+                                UserEmail = complaints.First().User.Email,
+                                TimeSubmitted = complaints.First().Complaint.TimeSubmitted,
+
+                                Comment = complaints.First().Complaint.Comment,
+                                TimeLastUpdated = complaints.First().Complaint.TimeLastUpdated,
+                                Status = complaints.First().Complaint.Status
+                            }
                         }
                     }
-                    }
-                };
+                }
+            };
 
             for (int i = 1; i < complaints.Count; i++)
             {
-                if(complaints[i].PlaceID == location)
+                if (complaints[i].Complaint.PlaceID == location)
                 {
-                    //add to existing dic
-                    if (complaints[i].Status == status)
+                    //add to existing list
+                    complaintLocations[i].Complaints.Add(new SimpleComplaint()
                     {
-                        //add to current status dic
-                        complaintsLocations[location][status].Add(new SimpleComplaint(complaints[i]));
-                    }
-                    else
-                    {
-                        //update status and add new dic
-                        status = complaints[i].Status;
-                        complaintsLocations[location].Add(status, new List<SimpleComplaint>()
-                        {
-                            new SimpleComplaint(complaints[i])
-                        });
-                    }
+                        UserID = complaints[i].User.Id,
+                        UserEmail = complaints[i].User.Email,
+                        TimeSubmitted = complaints[i].Complaint.TimeSubmitted,
+
+                        Comment = complaints[i].Complaint.Comment,
+                        TimeLastUpdated = complaints[i].Complaint.TimeLastUpdated,
+                        Status = complaints[i].Complaint.Status
+                    });
                 }
                 else
                 {
-                    //create new dic and update location and status
-                    location = complaints[i].PlaceID;
-                    status = complaints[i].Status;
-                    complaintsLocations.Add(location, 
-                        new Dictionary<string, List<SimpleComplaint>>() 
-                        { 
-                            { status, new List<SimpleComplaint>() 
-                                { new SimpleComplaint(complaints[i]) } 
+                    //create new location
+                    complaintLocations.Add(new ComplaintLocation()
+                    {
+                        PlaceId = complaints[i].Complaint.PlaceID,
+                        Complaints = new List<SimpleComplaint>()
+                        {
+                            new SimpleComplaint()
+                            {
+                                UserID = complaints[i].User.Id,
+                                UserEmail = complaints[i].User.Email,
+                                TimeSubmitted = complaints[i].Complaint.TimeSubmitted,
+
+                                Comment = complaints[i].Complaint.Comment,
+                                TimeLastUpdated = complaints[i].Complaint.TimeLastUpdated,
+                                Status = complaints[i].Complaint.Status
                             }
-                        });
+                        }
+                    });
                 }
             }
 
-            return complaintsLocations;
+            return complaintLocations;
         }
 
         /// <summary>
