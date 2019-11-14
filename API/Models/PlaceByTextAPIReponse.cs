@@ -7,23 +7,12 @@ using System.Threading.Tasks;
 #pragma warning disable CA2227 // Collection properties should be read only
 #pragma warning disable CA1034 // Nested types should not be visible
 #pragma warning disable CA1052 // Static holder types should be Static or NotInheritable
-
+#pragma warning disable CA1707 // Identifiers should not contain underscores
+#pragma warning disable IDE1006 // Naming Styles
 
 namespace API.Models
 {
-    public class Location
-    {
-        public double lat { get; set; }
-        public double lng { get; set; }
-    }
-
-    public class Northeast
-    {
-        public double lat { get; set; }
-        public double lng { get; set; }
-    }
-
-    public class Southwest
+    public class Coords
     {
         public double lat { get; set; }
         public double lng { get; set; }
@@ -31,13 +20,13 @@ namespace API.Models
 
     public class Viewport
     {
-        public Northeast northeast { get; set; }
-        public Southwest southwest { get; set; }
+        public Coords northeast { get; set; }
+        public Coords southwest { get; set; }
     }
 
     public class Geometry
     {
-        public Location location { get; set; }
+        public Coords location { get; set; }
         public Viewport viewport { get; set; }
     }
 

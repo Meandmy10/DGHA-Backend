@@ -12,6 +12,7 @@ namespace API.Models
     {
         public BasicUser(User user)
         {
+            if (user == null) throw new ArgumentNullException(nameof(user));
             Id = user.Id;
             Email = user.Email;
         }
@@ -19,6 +20,9 @@ namespace API.Models
         public string Id { get; set; }
         public string Email { get; set; }
 
-        public static implicit operator BasicUser(User v) => new BasicUser(v);
+        public static implicit operator BasicUser(User v)
+        {
+            return new BasicUser(v);
+        }
     }
 }

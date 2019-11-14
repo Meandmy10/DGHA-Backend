@@ -21,7 +21,12 @@ namespace API.Controllers
     [Authorize(AuthenticationSchemes = "Bearer")]
     public class ComplaintsController : BaseController
     {
-        public ComplaintsController(ApplicationDbContext context) : base(context) { }
+        private readonly ApplicationDbContext _context;
+
+        public ComplaintsController(ApplicationDbContext context) : base(context)
+        {
+            _context = context;
+        }
 
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
@@ -94,7 +99,7 @@ namespace API.Controllers
             //if location doesn't exist, add location to db
             if (!await _context.Locations.AnyAsync(e => e.PlaceID == newComplaint.PlaceID).ConfigureAwait(false))
             {
-                var location = new ModelsLibrary.Location(newComplaint.PlaceID);
+                var location = new Location(newComplaint.PlaceID);
                 _context.Locations.Add(location);
             }
 

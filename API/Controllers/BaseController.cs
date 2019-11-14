@@ -13,7 +13,7 @@ namespace API.Controllers
 {
     public abstract class BaseController : AuthorizedController
     {
-        protected readonly ApplicationDbContext _context;
+        private readonly ApplicationDbContext _context;
 
         public BaseController(ApplicationDbContext context)
         {
@@ -35,7 +35,12 @@ namespace API.Controllers
             }
         }
 
+        //unsurpress these warnings when impimented
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+#pragma warning disable CA1822 // Mark members as static
         protected async Task<bool> PlaceExists(string placeId)
+#pragma warning restore CA1822 // Mark members as static
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             if (placeId == null) return false;
             throw new NotImplementedException();

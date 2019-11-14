@@ -22,7 +22,12 @@ namespace API.Controllers
     [Authorize(AuthenticationSchemes = "Bearer")]
     public class ReviewsController : BaseController
     {
-        public ReviewsController(ApplicationDbContext context) : base(context) { }
+        private readonly ApplicationDbContext _context;
+
+        public ReviewsController(ApplicationDbContext context) : base(context) 
+        {
+            _context = context;
+        }
 
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
@@ -40,68 +45,70 @@ namespace API.Controllers
                                          .ConfigureAwait(false);
         }
 
-        /// <summary>
-        /// Gets Average ratings, Review count and first set (of 5) reviews for requested Place Id
-        /// </summary>
-        /// <param name="placeId">Place Id to get information from</param>
-        /// <returns>PlaceReviews object for specified place id</returns>
-        /// <response code="200">Returns PlaceReviews object for specified place</response>
-        /// <response code="404">No Reviews Found</response>
-        [HttpGet("placeId/{placeId}")]
-        [ProducesResponseType(200)]
-        [ProducesResponseType(404)]
-        [AllowAnonymous]
-        public async Task<ActionResult<PlaceReviews>> GetPlaceReviews(string placeId)
-        {
-            var reviews = await _context.Reviews.Where(review => review.PlaceID == placeId)
-                                                .ToListAsync()
-                                                .ConfigureAwait(false);
+        //TODO: Remove this when we know we don't need it anymore
+        ///// <summary>
+        ///// Gets Average ratings, Review count and first set (of 5) reviews for requested Place Id
+        ///// </summary>
+        ///// <param name="placeId">Place Id to get information from</param>
+        ///// <returns>PlaceReviews object for specified place id</returns>
+        ///// <response code="200">Returns PlaceReviews object for specified place</response>
+        ///// <response code="404">No Reviews Found</response>
+        //[HttpGet("placeId/{placeId}")]
+        //[ProducesResponseType(200)]
+        //[ProducesResponseType(404)]
+        //[AllowAnonymous]
+        //public async Task<ActionResult<PlaceReviews>> GetPlaceReviews(string placeId)
+        //{
+        //    var reviews = await _context.Reviews.Where(review => review.PlaceID == placeId)
+        //                                        .ToListAsync()
+        //                                        .ConfigureAwait(false);
 
-            if (reviews.Count == 0)
-            {
-                return NotFound();
-            }
+        //    if (reviews.Count == 0)
+        //    {
+        //        return NotFound();
+        //    }
 
-            var placeReviews = new PlaceReviews
-            {
-                AverageRating = (float)reviews.Average(review => review.OverallRating),
-                AverageLocationRating = (float)reviews.Average(review => review.LocationRating),
-                AverageAmentitiesRating = (float)reviews.Average(review => review.AmentitiesRating),
-                AverageServiceRating = (float)reviews.Average(review => review.ServiceRating),
-                Count = reviews.Count,
-                Reviews = reviews.OrderByDescending(review => review.TimeAdded).Take(5)
-            };
+        //    var placeReviews = new PlaceReviews
+        //    {
+        //        AverageRating = (float)reviews.Average(review => review.OverallRating),
+        //        AverageLocationRating = (float)reviews.Average(review => review.LocationRating),
+        //        AverageAmentitiesRating = (float)reviews.Average(review => review.AmentitiesRating),
+        //        AverageServiceRating = (float)reviews.Average(review => review.ServiceRating),
+        //        Count = reviews.Count,
+        //        Reviews = reviews.OrderByDescending(review => review.TimeAdded).Take(5)
+        //    };
 
-            return placeReviews;
-        }
+        //    return placeReviews;
+        //}
 
         /// <summary>
         /// Gets specified set (of 5) of reviews for requested Place Id
         /// </summary>
         /// <param name="placeId">Place Id to get reviews for</param>
-        /// <param name="set">Set of reviews to get, starts at 0</param>
+        /// <param name="set">Set of reviews to get, starts at and defaults to 0</param>
         /// <returns>Review set from specified place id</returns>
         /// <response code="200">Returns specified set of reviews from specified place</response>
         /// <response code="400">Set number invalid</response>
         /// <response code="404">No Reviews Found</response>
-        [HttpGet("placeId/{placeId}/{set}")]
+        [HttpGet("placeId/{placeId}")]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
         [AllowAnonymous]
-        public async Task<ActionResult<IEnumerable<Review>>> GetPlaceReviews(string placeId, int set)
+        public async Task<ActionResult<IEnumerable<Review>>> GetPlaceReviews(string placeId, int set = 0)
         {
             if(set < 0)
             {
                 return BadRequest("Invalid Set");
             }
 
-            var reviews = await _context.Reviews.Where(review => review.PlaceID == placeId)
-                                                .OrderByDescending(review => review.TimeAdded)
-                                                .Skip(5 * set)
-                                                .Take(5)
-                                                .ToListAsync()
-                                                .ConfigureAwait(false);
+            var reviews = await _context.Reviews
+                .Where(review => review.PlaceID == placeId && !string.IsNullOrEmpty(review.Comment))
+                .OrderByDescending(reviews => reviews.TimeAdded)
+                .Skip(5 * set)
+                .Take(5)
+                .ToListAsync()
+                .ConfigureAwait(false);
 
             if (reviews.Count == 0)
             {
@@ -192,7 +199,7 @@ namespace API.Controllers
             //if location doesn't exist, add location to db
             if (!await _context.Locations.AnyAsync(e => e.PlaceID == newReview.PlaceID).ConfigureAwait(false))
             {
-                var location = new ModelsLibrary.Location(newReview.PlaceID);
+                var location = new Location(newReview.PlaceID);
                 _context.Locations.Add(location);
             }
 
