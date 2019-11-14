@@ -51,7 +51,9 @@ namespace IdentityServer
                     {
                         new Secret("secret".Sha256())
                     },
-                    AllowedScopes = { "api" }
+                    AllowedScopes = { "api" },
+
+                    AllowOfflineAccess = true
                 },
 
                 new Client
@@ -80,6 +82,8 @@ namespace IdentityServer
                         "email"
                     },
                     AlwaysIncludeUserClaimsInIdToken = true,
+
+                    AllowOfflineAccess = true
                 }
             };
         }
