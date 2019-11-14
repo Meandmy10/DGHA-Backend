@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using API.Models;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ModelsLibrary;
@@ -54,39 +52,19 @@ namespace API.Controllers
                 .ToListAsync()
                 .ConfigureAwait(false);
 
-            string location = complaints.First().Complaint.PlaceID;
-            int locationNo = 0;
+            string location = "";
+            int locationNo = -1;
 
-            List<ComplaintLocation> complaintLocations = new List<ComplaintLocation>()
-            {
-                {
-                    new ComplaintLocation()
-                    {
-                        PlaceId = location,
-                        Complaints = new List<SimpleComplaint>()
-                        {
-                            new SimpleComplaint()
-                            {
-                                UserID = complaints.First().User.Id,
-                                UserEmail = complaints.First().User.Email,
-                                TimeSubmitted = complaints.First().Complaint.TimeSubmitted,
+            List<ComplaintLocation> complaintLocations = new List<ComplaintLocation>();
 
-                                Comment = complaints.First().Complaint.Comment,
-                                TimeLastUpdated = complaints.First().Complaint.TimeLastUpdated,
-                                Status = complaints.First().Complaint.Status
-                            }
-                        }
-                    }
-                }
-            };
-
-            for (int i = 1; i < complaints.Count; i++)
+            for (int i = 0; i < complaints.Count; i++)
             {
                 if (complaints[i].Complaint.PlaceID == location)
                 {
                     //add to existing list
                     complaintLocations[locationNo].Complaints.Add(new SimpleComplaint()
                     {
+                        PlaceID = complaints[i].Complaint.PlaceID,
                         UserID = complaints[i].User.Id,
                         UserEmail = complaints[i].User.Email,
                         TimeSubmitted = complaints[i].Complaint.TimeSubmitted,
@@ -98,14 +76,30 @@ namespace API.Controllers
                 }
                 else
                 {
+                    location = complaints[i].Complaint.PlaceID;
+
+                    IdPlaceResult locationInfo = await HttpReq.GetPlaceByIdFromGoogle(location).ConfigureAwait(false);
+
+                    if(locationInfo == null)
+                    {
+                        locationInfo = new IdPlaceResult()
+                        {
+                            name = "Not Found"
+                        };
+                    }
+
                     //create new location
                     complaintLocations.Add(new ComplaintLocation()
                     {
                         PlaceId = complaints[i].Complaint.PlaceID,
+                        Address = locationInfo.formatted_address,
+                        Name = locationInfo.name,
+                        Types = locationInfo.types,
                         Complaints = new List<SimpleComplaint>()
                         {
                             new SimpleComplaint()
                             {
+                                PlaceID = complaints[i].Complaint.PlaceID,
                                 UserID = complaints[i].User.Id,
                                 UserEmail = complaints[i].User.Email,
                                 TimeSubmitted = complaints[i].Complaint.TimeSubmitted,
@@ -117,7 +111,6 @@ namespace API.Controllers
                         }
                     });
 
-                    location = complaints[i].Complaint.PlaceID;
                     locationNo++;
                 }
             }
@@ -247,7 +240,7 @@ namespace API.Controllers
         /// <param name="placeId">Complaints place id</param>
         /// <param name="userId">Complaints user id</param>
         /// <param name="timeSubmitted">Time complaint was submitted</param>
-        /// <param name="complaint">Updated complaint</param>
+        /// <param name="updatedComplaint">Updated complaint</param>
         /// <returns>Action result</returns>
         /// <response code="204">Complaint Successfully Updated</response>
         /// <response code="400">Invalid Input</response>
@@ -257,14 +250,16 @@ namespace API.Controllers
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
-        public async Task<IActionResult> PutComplaint(string placeId, string userId, DateTime timeSubmitted, Complaint complaint)
+        public async Task<IActionResult> PutComplaint(string placeId, string userId, DateTime timeSubmitted, Complaint updatedComplaint)
         {
-            if (complaint == null || placeId != complaint.PlaceID || userId != complaint.UserID || timeSubmitted != complaint.TimeSubmitted)
+            if (updatedComplaint == null || placeId != updatedComplaint.PlaceID || userId != updatedComplaint.UserID || !timeSubmitted.Equals(updatedComplaint.TimeSubmitted))
             {
                 return BadRequest("Invalid Input");
             }
 
-            _context.Entry(complaint).State = EntityState.Modified;
+            updatedComplaint.TimeLastUpdated = DateTime.Now;
+
+            _context.Entry(updatedComplaint).State = EntityState.Modified;
 
             try
             {
@@ -283,7 +278,7 @@ namespace API.Controllers
                 }
             }
 
-            return NoContent();
+            return Ok(updatedComplaint);
         }
 
         /// <summary>

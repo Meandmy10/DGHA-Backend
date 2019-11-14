@@ -1,7 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 #pragma warning disable IDE1006 // Naming Styles
@@ -22,7 +19,7 @@ namespace API.Models
         public string formatted_address { get; set; }
         public string name { get; set; }
         public string place_id { get; set; }
-        public List<string> types { get; set;  }
+        public List<string> types { get; set; }
     }
 
     public class PlaceIdQueryResponse

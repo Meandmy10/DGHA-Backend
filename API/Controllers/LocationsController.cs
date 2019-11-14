@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using API.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using ModelsLibrary;
 using ModelsLibrary.Data;
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member

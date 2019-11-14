@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using API.Models;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ModelsLibrary;
@@ -44,42 +41,6 @@ namespace API.Controllers
             return await _context.Reviews.ToListAsync()
                                          .ConfigureAwait(false);
         }
-
-        //TODO: Remove this when we know we don't need it anymore
-        ///// <summary>
-        ///// Gets Average ratings, Review count and first set (of 5) reviews for requested Place Id
-        ///// </summary>
-        ///// <param name="placeId">Place Id to get information from</param>
-        ///// <returns>PlaceReviews object for specified place id</returns>
-        ///// <response code="200">Returns PlaceReviews object for specified place</response>
-        ///// <response code="404">No Reviews Found</response>
-        //[HttpGet("placeId/{placeId}")]
-        //[ProducesResponseType(200)]
-        //[ProducesResponseType(404)]
-        //[AllowAnonymous]
-        //public async Task<ActionResult<PlaceReviews>> GetPlaceReviews(string placeId)
-        //{
-        //    var reviews = await _context.Reviews.Where(review => review.PlaceID == placeId)
-        //                                        .ToListAsync()
-        //                                        .ConfigureAwait(false);
-
-        //    if (reviews.Count == 0)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    var placeReviews = new PlaceReviews
-        //    {
-        //        AverageRating = (float)reviews.Average(review => review.OverallRating),
-        //        AverageLocationRating = (float)reviews.Average(review => review.LocationRating),
-        //        AverageAmentitiesRating = (float)reviews.Average(review => review.AmentitiesRating),
-        //        AverageServiceRating = (float)reviews.Average(review => review.ServiceRating),
-        //        Count = reviews.Count,
-        //        Reviews = reviews.OrderByDescending(review => review.TimeAdded).Take(5)
-        //    };
-
-        //    return placeReviews;
-        //}
 
         /// <summary>
         /// Gets specified set (of 5) of reviews for requested Place Id
