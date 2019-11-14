@@ -13,21 +13,21 @@ namespace API.Models
     {
         public string long_name { get; set; }
         public string short_name { get; set; }
-        public List<string> types { get; }
+        public List<string> types { get; set; }
     }
 
     public class IdPlaceResult
     {
-        public List<AddressComponent> address_components { get; }
+        public List<AddressComponent> address_components { get; set; }
         public string formatted_address { get; set; }
         public string name { get; set; }
         public string place_id { get; set; }
-        public List<string> types { get; }
+        public List<string> types { get; set;  }
     }
 
     public class PlaceIdQueryResponse
     {
-        public List<object> html_attributions { get; }
+        public List<object> html_attributions { get; set; }
         public IdPlaceResult result { get; set; }
         public string status { get; set; }
     }

@@ -9,7 +9,7 @@ namespace API.Models
 {
     public class SearchResponse
     {
-        public List<Place> results { get; }
+        public List<Place> results { get; set; }
         public string nextPageToken { get; set; }
 
         public SearchResponse()

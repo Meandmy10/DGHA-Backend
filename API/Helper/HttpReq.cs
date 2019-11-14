@@ -11,7 +11,7 @@ public static class HttpReq
 {
     private const string apiKey = "AIzaSyCj1t28RYFPFpa1xL_kjlIwCrH8CEryoJs";
 
-    public static async Task<IdPlaceResult> getPlaceByIdFromGoogle(string id)
+    public static async Task<IdPlaceResult> GetPlaceByIdFromGoogle(string id)
     {
         Uri url = new Uri($"https://maps.googleapis.com/maps/api/place/details/json?place_id={id}&fields=place_id,types,name,address_components,formatted_address&key={apiKey}");
 
@@ -34,7 +34,7 @@ public static class HttpReq
         }
     }
 
-    public static async Task<PlaceAPIQueryResponse> getPlaceByTextFromGoogle(string query, string nextPageToken)
+    public static async Task<PlaceAPIQueryResponse> GetPlaceByTextFromGoogle(string query, string nextPageToken)
     {
         Uri url = new Uri($"https://maps.googleapis.com/maps/api/place/textsearch/json?query={query}&fields=place_id&key={apiKey}&pagetoken={nextPageToken}");
 

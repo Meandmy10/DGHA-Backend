@@ -116,7 +116,7 @@ namespace API.Controllers
             }
 
             SearchResponse searchResponse = new SearchResponse();
-            PlaceAPIQueryResponse paqr = await HttpReq.getPlaceByTextFromGoogle(query, nextPageToken).ConfigureAwait(true);
+            PlaceAPIQueryResponse paqr = await HttpReq.GetPlaceByTextFromGoogle(query, nextPageToken).ConfigureAwait(true);
 
             for (int i = 0; i < paqr.results.Count; i++)
             {
@@ -156,7 +156,7 @@ namespace API.Controllers
         // check if the place id belongs to a place that is in a specified state
         private async Task<Place> FilterPlaceByState(Place databasePlace, string state)
         {
-            var apiPlace = await HttpReq.getPlaceByIdFromGoogle(databasePlace.PlaceId).ConfigureAwait(true);
+            var apiPlace = await HttpReq.GetPlaceByIdFromGoogle(databasePlace.PlaceId).ConfigureAwait(true);
 
             // the place's state
             string placeState = apiPlace.address_components[apiPlace.address_components.Count - 3].long_name.ToLower();
