@@ -126,12 +126,29 @@ namespace API.Controllers
         [HttpGet("Resolved")]
         [Authorize(Roles = "Administrator")]
         [ProducesResponseType(200)]
-        public async Task<ActionResult<IEnumerable<Complaint>>> GetResolvedComplaints()
+        public async Task<ActionResult<IEnumerable<SimpleComplaint>>> GetResolvedComplaints()
         {
-            return await _context.Complaints.Where(complaint => complaint.Status == "Resolved")
-                                            .OrderByDescending(complaint => complaint.TimeLastUpdated)
-                                            .ToListAsync()
-                                            .ConfigureAwait(false);
+            return await _context.Complaints
+                .Join(_context.Users,
+                c => c.UserID,
+                u => u.Id,
+                (c, u) => new { Complaint = c, User = u })
+                .Where(cu => cu.Complaint.Status == "Resolved")
+                .Where(cu => cu.Complaint.UserID == cu.User.Id)
+                .OrderBy(cu => cu.Complaint.PlaceID)
+                .ThenByDescending(cu => cu.Complaint.TimeLastUpdated)
+                .Select(complaint => new SimpleComplaint()
+                {
+                    Comment = complaint.Complaint.Comment,
+                    PlaceID = complaint.Complaint.PlaceID,
+                    Status = complaint.Complaint.Status,
+                    TimeLastUpdated = complaint.Complaint.TimeLastUpdated,
+                    TimeSubmitted = complaint.Complaint.TimeSubmitted,
+                    UserEmail = complaint.User.Email,
+                    UserID = complaint.User.Id
+                })
+                .ToListAsync()
+                .ConfigureAwait(false);
         }
 
         /// <summary>
