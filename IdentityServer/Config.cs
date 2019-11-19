@@ -50,7 +50,11 @@ namespace IdentityServer
                     {
                         new Secret("secret".Sha256())
                     },
-                    AllowedScopes = { "api", IdentityServerConstants.StandardScopes.OfflineAccess },
+                    AllowedScopes = { 
+                        "api",
+                        IdentityServerConstants.StandardScopes.OfflineAccess,
+                        IdentityServerConstants.StandardScopes.OpenId
+                    },
 
                     AllowOfflineAccess = true
                 },
