@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using ModelsLibrary;
+using ModelsLibrary.Data;
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 namespace API.Controllers
@@ -56,7 +57,7 @@ namespace API.Controllers
         /// </summary>
         /// <param name="userId">User Account Id</param>
         /// <returns>Requested Account</returns>
-        /// <response code="200">Returns Specified User Accounts</response>
+        /// <response code="200">Returns Specified User Account</response>
         /// <response code="404">Account Not Found</response>
         [HttpGet("{userId}")]
         [ProducesResponseType(200)]
@@ -78,6 +79,33 @@ namespace API.Controllers
             {
                 return user;
             }
+        }
+
+        /// <summary>
+        /// Gets User Account for email
+        /// </summary>
+        /// <param name="email">User Account Email</param>
+        /// <returns>Requested Account</returns>
+        /// <response code="200">Returns Specified User Account</response>
+        /// <response code="404">Account Not Found</response>
+        [HttpGet("email/{email}")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(404)]
+        [Authorize(Roles = "Administrator")]
+        public async Task<ActionResult<BasicUserRoles>> GetEmailsAccount(string email)
+        {
+            User user = await _userManager.FindByEmailAsync(email)
+                                          .ConfigureAwait(false);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            List<string> roles = (List<string>)await _userManager.GetRolesAsync(user)
+                                                                 .ConfigureAwait(false);
+
+            return new BasicUserRoles(user, roles);
         }
 
         /// <summary>
@@ -208,7 +236,7 @@ namespace API.Controllers
         /// <returns>Action Result</returns>
         /// <response code="204">Role added successfully</response>
         /// <response code="400">Returns Request Error</response>
-        /// <response code="404">Returns Request Error</response>
+        /// <response code="404">User not found</response>
         [HttpPost("{userId}/{roleName}")]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
@@ -243,7 +271,7 @@ namespace API.Controllers
         /// <returns>Action Result</returns>
         /// <response code="204">Role removed successfully</response>
         /// <response code="400">Returns Request Error</response>
-        /// <response code="404">Returns Request Error</response>
+        /// <response code="404">User not found</response>
         [HttpDelete("{userId}/{roleName}")]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]

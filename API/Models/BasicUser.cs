@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using ModelsLibrary;
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
@@ -20,6 +21,16 @@ namespace API.Models
         public static implicit operator BasicUser(User v)
         {
             return new BasicUser(v);
+        }
+    }
+
+    //this is just basic user with roles...
+    public class BasicUserRoles : BasicUser
+    {
+        public List<string> Roles { get; set; }
+
+        public BasicUserRoles(User user, List<string> roles) : base(user) {
+            Roles = roles;
         }
     }
 }
