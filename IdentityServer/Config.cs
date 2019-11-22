@@ -50,13 +50,18 @@ namespace IdentityServer
                     {
                         new Secret("secret".Sha256())
                     },
-                    AllowedScopes = { 
+                    AllowedScopes = {
                         "api",
                         IdentityServerConstants.StandardScopes.OfflineAccess,
                         IdentityServerConstants.StandardScopes.OpenId
                     },
 
-                    AllowOfflineAccess = true
+                    AllowOfflineAccess = true,
+                    AbsoluteRefreshTokenLifetime = 2592000, //30 days
+                    SlidingRefreshTokenLifetime = 1296000, // 15 days
+                    RefreshTokenUsage = TokenUsage.OneTimeOnly,
+                    RefreshTokenExpiration = TokenExpiration.Absolute,
+                    UpdateAccessTokenClaimsOnRefresh = true
                 },
 
                 new Client
