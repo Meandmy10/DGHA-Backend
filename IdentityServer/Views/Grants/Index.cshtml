@@ -47,9 +47,9 @@
                         <div>
                             <div class="granttype">Identity Grants</div>
                             <ul>
-                                @foreach (var name in grant.IdentityGrantNames)
-                        {
-                                    <li>@name</li>
+                                @foreach (var grantName in grant.IdentityGrantNames)
+                                {
+                                    <li>@grantName</li>
                                 }
                             </ul>
                         </div>
@@ -59,9 +59,9 @@
                         <div>
                             <div class="granttype">API Grants</div>
                             <ul>
-                                @foreach (var name in grant.ApiGrantNames)
+                                @foreach (var grantName in grant.ApiGrantNames)
                                 {
-                                    <li>@name</li>
+                                    <li>@grantName</li>
                                 }
                             </ul>
                         </div>
@@ -77,3 +77,4 @@
         }
     }
 </div>
+<a asp-action="Logout" asp-controller="Account">Logout</a>
