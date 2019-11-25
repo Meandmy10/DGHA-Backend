@@ -61,7 +61,8 @@ namespace IdentityServer
                     SlidingRefreshTokenLifetime = 1296000, // 15 days
                     RefreshTokenUsage = TokenUsage.OneTimeOnly,
                     RefreshTokenExpiration = TokenExpiration.Absolute,
-                    UpdateAccessTokenClaimsOnRefresh = true
+                    UpdateAccessTokenClaimsOnRefresh = true,
+                    AccessTokenLifetime = 2592000, // 30 days
                 },
 
                 new Client
