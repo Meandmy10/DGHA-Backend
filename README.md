@@ -1,5 +1,15 @@
 # DGHA-Backend
-This is the Repo for the DGHA project's backend, the other components are [here](https://github.com/leechuyem/dgha) and [here](https://github.com/Meandmy10/DGHA-Admin)
+This is the backend API for the DGHA project which was the final and largest project for my Software Development Diploma.
+
+The other sections of the project are:
+- [Mobile App](https://github.com/leechuyem/dgha)
+- [Admin Application](https://github.com/jamtowers/DGHA-Admin)
+
+This project was made with the help of these fine folks:
+- [Joseph Khai](https://github.com/josephkhaipi)
+- [Lee Chu Yem](https://github.com/leechuyem)
+- [James Towers](https://github.com/jamtowers) (Hey that's me!)
+- [Matthew Thorne](https://github.com/Thornie)
 
 ## Special Requirements
 If you are planning on deploying this backend there are a few thing you need to do to get it running properly:
@@ -24,4 +34,6 @@ To Ensure the API endpoints and authentication are working be sure to:
 1. Update `Startup.cs` file so the `adminUrl` variable in the `ConfigureServices` function is the same as the deployed Admin Applicaion and `baseUrl` is the same as the identity server url
 2. Update `Startup.cs` file so the `Authority` option for the `AddAuthentication` function is the same as the Admin Application url
 
-At the base url of the API you can find the Swagger API Documentation, to see a deployed example of this go [here](https://dgha-api.azurewebsites.net/index.html)
+At the base url of the API you can find the Swagger API Documentation.
+
+~~To see a deployed example of this go [here](https://dgha-api.azurewebsites.net/index.html)~~ <- That doesn't exist anymore, sorry.
